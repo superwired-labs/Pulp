@@ -136,17 +136,6 @@ static inline int Log2_64(uint64_t x) {
 	return (int)index;
 }
 
-/* --------------------------------------------------------------
- *  ClassifyIpAvx512()
- *
- *  Return  1 → Valid IPv6 format detected
- *          0 → Valid IPv4 format detected
- *         -1 → Invalid IP string (Empty, "[]", etc.) - DO NOT PROCEED TO ANON
- *
- *  Prerequisite: CPU must support AVX-512VL.
- *  Note: This tri-state return is a critical guard for the SIMD pipeline.
- *  ------------------------------------------------------------ */
-
 
 static inline const char* StripBrackets(const char* s, size_t* len)
 {
