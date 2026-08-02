@@ -48,13 +48,11 @@ A clear and concise description of the bug or unexpected behavior.
 
 \## Minimal Reproducible Code Example
 
-```c
-
-// Provide a minimal C code snippet showing how PULP is initialized and called.
+Provide a minimal C code snippet showing how PULP is initialized and called.
 
 
 
 \## Additional Context / Logs
 
-// Add any stack traces, PulpReader CLI output, or relevant context here.
+Add any stack traces, PulpReader CLI output, or relevant context here.
 
