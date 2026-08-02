@@ -1,10 +1,10 @@
-# PULP – Precompressed Upstream Layer Pipeline     [![MSVC C11 Build Check](https://github.com/superwired-labs/Pulp/actions/workflows/build.yml/badge.svg)](https://github.com/superwired-labs/Pulp/actions/workflows/build.yml)
+# PULP – Precompressed Upstream Layer Pipeline  
 
 Copyright François Gauthier - Superwired-Labs
 
 [![License](https://img.shields.io/badge/License-AGPL%20v3%20%2F%20Commercial-blue.svg)](LICENSES/AGPL-3.0.txt)
 [![Platform](https://img.shields.io/badge/platform-Windows%20x64-lightgrey)]()
-
+[![MSVC C11 Build Check](https://github.com/superwired-labs/Pulp/actions/workflows/build.yml/badge.svg)](https://github.com/superwired-labs/Pulp/actions/workflows/build.yml)
 
 **Stop feeding raw logs to expensive storage/network.**
 
