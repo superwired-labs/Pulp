@@ -11,11 +11,8 @@ Only the latest stable release of **PULP** receives security updates.
 
 
 | Version | Supported          |
-
 | ------- | ------------------ |
-
 | 1.0.x   | :white\_check\_mark: |
-
 | < 1.0   | :x:                |
 
 
