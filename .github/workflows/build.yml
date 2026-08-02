@@ -1,0 +1,22 @@
+name: MSVC C11 Build Check
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    name: Build Release x64
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Build Solution (Release x64)
+      run: msbuild Pulp.sln /p:Configuration=Release /p:Platform=x64 /verbosity:minimal
