@@ -12,13 +12,10 @@ Copyright François Gauthier - Superwired-Labs
 
 **PULP** is a hardware-accelerated C logging engine engineered specifically for **high-throughput access logs, reverse proxies, API gateways, and edge telemetry**. 
 
-By enforcing a fixed-layout binary payload, PULP achieves **20M+ logs/second** on commodity hardware with low-lock contention and **lossless dictionary-based semantic pre-compression & deduplication**. This intentional design trade-off prioritizes extreme hardware efficiency and memory predictability over arbitrary, dynamically-parsed schemas (like raw JSON).
+By enforcing a fixed-layout binary payload, PULP achieves **20M+ logs/second** on commodity hardware with low-lock contention and **lossless dictionary-based semantic pre-compression & deduplication**. 
+This intentional design trade-off prioritizes extreme hardware efficiency and memory predictability over arbitrary, dynamically-parsed schemas (like raw JSON).
 
-PULP is a native C library for Windows x64 that compresses HTTP, DNS, and telemetry logs **at the source** inside your own process, before they ever hit disk or network. 
-Lossless semantic deduplication + LZ4 shrinks data 3–5×; IP anonymisation is applied inline; and the zero-allocation hot path sustains +21M logs/sec with a deterministic, low memory footprint.
-
-Link the DLL, call one function per log, and let compressed shards accumulate. 
-A companion CLI (`PulpReader`) decodes them back to text whenever you need. 
+Designed as a native C library for Windows x64, simply link the DLL, call one function per log line, and let compressed binary shards accumulate. A companion CLI (`PulpReader`) handles decoding back to text or JSON whenever needed.
 
 Want to verify the numbers? Drop the PULP DLL and Lib files into the LogProducer folder, run it on your own hardware (test datasets included), ready in under 5 minutes.
 
