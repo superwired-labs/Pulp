@@ -21,7 +21,7 @@ Want to verify the numbers? Drop the PULP DLL and Lib files into the LogProducer
 
 **Key numbers (6‑core Ryzen 5 Pro 8640HS, NVMe SSD):**
 - **+20 million logs/second** sustained throughput
-- **~3-6:1 compression** on typical HTTP logs (semantic + LZ4)
+- **~3-6:1 compression** on typical structured logs (semantic + LZ4)
 - **As low as 20 MB memory** footprint, fully deterministic 
 
 ---
