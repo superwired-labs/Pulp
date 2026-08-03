@@ -20,7 +20,7 @@ Designed as a native C library for Windows x64, simply link the DLL, call one fu
 Want to verify the numbers? Drop the PULP DLL and Lib files into the LogProducer folder, run it on your own hardware (test datasets included), ready in under 5 minutes.
 
 **Key numbers (6‑core Ryzen 5 Pro 8640HS, NVMe SSD):**
-- **+21 million logs/second** sustained throughput
+- **+20 million logs/second** sustained throughput
 - **~3-6:1 compression** on typical HTTP logs (semantic + LZ4)
 - **As low as 20 MB memory** footprint, fully deterministic 
 
