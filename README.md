@@ -446,6 +446,17 @@ PULP is dual‑licensed:
 Full license texts are in the `LICENSES/` folder.  
 For commercial conditions & pricing, contact **fgauthier [at] superwired-labs [dot] com**.
 
+---
+
+## Community Sponsorship & Enterprise Support
+
+PULP is open-source software maintained by **SuperWireLabs**. If PULP saves you storage costs or accelerates your infrastructure, consider supporting its ongoing development:
+
+* **Open Source Sponsorship:** Support the project via [GitHub Sponsors](https://github.com/sponsors/superwired-labs) to help fund roadmap features and maintenance.
+* **Commercial Licensing & Consulting:** For custom binary layouts, dedicated support, or integration services into enterprise architectures, contact us at `fgauthier[at]superwired-labs[dot]com` or read our [Commercial Licensing Guide](COMMERCIAL.md).
+
+---
+
 ### Third‑Party Libraries
 
 | Library | Author | License |
