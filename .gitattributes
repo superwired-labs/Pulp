@@ -2,7 +2,8 @@
 #    Linguist ignorera ces fichiers dans la barre des langages du dépôt.
 third_party/** linguist-vendored
 Cityhash_wrapper/** linguist-vendored
-deps/** linguist-vendored
+Lz4/** linguist-vendored
+Xxh3/** linguist-vendored
 
 # 2. Forcer la détection de tous les fichiers d'en-tête .h en C pur
 *.h linguist-language=C
