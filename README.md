@@ -399,39 +399,39 @@ Once decompressed, the payload contains two primary sections delimited by 64-bit
 
 ```json
 {
- cache_hit_resource_L1 : 249937807
- cache_hit_resource_L1 % : 99.98
- cache_hit_resource_L2 : 62193
- cache_hit_resource_L2 % : 0.02
- cache_hit_resource_L3 : 0
- cache_hit_resource_L3 % : 0.00
- cache_hit_endpoint_L1 : 250000000
- cache_hit_endpoint_L1_% : 100.00
- cache_hit_endpoint_L2 : 0
- cache_hit_endpoint_L2_% : 0.00
- cache_hit_endpoint_L3 : 0
- cache_hit_endpoint_L3_% : 0.00
- resource_cache_probes_total : 206998729
- endpoint_cache_probes_total : 4944735
- resource_cache_insert_to_step_ratio : 1.21
- endpoint_cache_insert_to_step_ratio : 50.56
- resource_cache_probes_depth_max : 32
- endpoint_cache_probes_depth_max : 0
- resource_cache_fullprobescan_total : 0
- endpoint_cache_fullprobescan_total : 0
- log_processed_total : 250000000
- batch_flushed_total : 15
- batch_compressed_total : 15
- batch_written_total : 15
- writer_waitfile_max : 0
- backpressure_count : 0
- compression_lz4_ratio_avg : 0.71
- compression_failure_total : 0
- lost_logs_total : 0
- log_rotation : 1
- log_refused_total : 0
- rotation_resync_total : 0
- throughput: 26.49 millions logs/s
+ "cache_hit_resource_L1" : 249937807
+ "cache_hit_resource_L1_%" : 99.98
+ "cache_hit_resource_L2" : 62193
+ "cache_hit_resource_L2_%" : 0.02
+ "cache_hit_resource_L3" : 0
+ "cache_hit_resource_L3_%" : 0.00
+ "cache_hit_endpoint_L1" : 250000000
+ "cache_hit_endpoint_L1_%" : 100.00
+ "cache_hit_endpoint_L2" : 0
+ "cache_hit_endpoint_L2_%" : 0.00
+ "cache_hit_endpoint_L3" : 0
+ "cache_hit_endpoint_L3_%" : 0.00
+ "resource_cache_probes_total" : 206998729
+ "endpoint_cache_probes_total" : 4944735
+ "resource_cache_insert_to_step_ratio" : 1.21
+ "endpoint_cache_insert_to_step_ratio" : 50.56
+ "resource_cache_probes_depth_max" : 32
+ "endpoint_cache_probes_depth_max" : 0
+ "resource_cache_fullprobescan_total" : 0
+ "endpoint_cache_fullprobescan_total" : 0
+ "log_processed_total" : 250000000
+ "batch_flushed_total" : 15
+ "batch_compressed_total" : 15
+ "batch_written_total" : 15
+ "writer_waitfile_max" : 0
+ "backpressure_count" : 0
+ "compression_lz4_ratio_avg" : 0.71
+ "compression_failure_total" : 0
+ "lost_logs_total" : 0
+ "log_rotation" : 1
+ "log_refused_total" : 0
+ "rotation_resync_total" : 0
+ "throughput millions logs/s :" 26.49 
 }
 ```
 
