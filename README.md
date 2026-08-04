@@ -218,16 +218,16 @@ Number of unique URL/IP values the per‑thread cache can hold.
 | Value | Slots | Recommended batch |
 |-------|-------|-------------------|
 | `DICT_16K` | 16 384 | `BATCH_500KB` |
-| `DICT_32K` | 32 768 | `BATCH_1MB` |
-| `DICT_64K` | 65 536 | `BATCH_2MB` |
-| `DICT_128K` | 131 072 | `BATCH_4MB` |
-| `DICT_256K` | 262 144 | `BATCH_8MB` |
-| `DICT_512K` | 524 288 | `BATCH_16MB` |
-| `DICT_1M` | 1 048 576 | `BATCH_32MB` |
-|`DICT_2M`	|2 097 152|	`BATCH_64MB`|
-|`DICT_4M`	|4 194 304|	`BATCH_128MB`|
-|`DICT_8M`	|8 388 608|	`BATCH_256MB`|
-|`DICT_16M`	|16 777 216|	`BATCH_512MB`|
+| `DICT_32K` | 32 768 | `BATCH_1MB` or lower|
+| `DICT_64K` | 65 536 | `BATCH_2MB` or lower|
+| `DICT_128K` | 131 072 | `BATCH_4MB` or lower|
+| `DICT_256K` | 262 144 | `BATCH_8MB` or lower|
+| `DICT_512K` | 524 288 | `BATCH_16MB` or lower|
+| `DICT_1M` | 1 048 576 | `BATCH_32MB` or lower|
+|`DICT_2M`	|2 097 152|	`BATCH_64MB` or lower|
+|`DICT_4M`	|4 194 304|	`BATCH_128MB` or lower|
+|`DICT_8M`	|8 388 608|	`BATCH_256MB` or lower|
+|`DICT_16M`	|16 777 216| `BATCH_512MB` or lower|
 | `DICT_AUTOSIZE` | ~1/32 total RAM | auto |
 
 ### Batch size (`BatchSize`)
