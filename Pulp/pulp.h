@@ -73,6 +73,25 @@ extern "C" {
 * => To estimate the dictionary memory footprint use :
 *    dictionary size : count_of_dictionary_slots * 563 (slot size) * number_of_caller_threads = total_size_in_bytes
 *    For instance : DICT_64K is 64 * 1024 => 65536 elements, so 65536 * 563 * 1 (number of caller thread) = 36.9 MB
+* 
+* 
+* ── CHEAT SHEET ──────────────────────────────────────────────────────────
+*  Preset       Slots      Approx. RAM (per thread)   Recommended Batch
+*  DICT_16K      16 384				  ~9 MB						500 KB 
+*  DICT_32K      32 768				 ~18 MB						  1 MB 
+*  DICT_64K      65 536				 ~37 MB						  2 MB 
+*  DICT_128K    131 072				 ~74 MB						  4 MB 
+*  DICT_256K    262 144				~148 MB						  8 MB 
+*  DICT_512K    524 288				~295 MB						 16 MB 
+*  DICT_1M    1 048 576				~590 MB						 32 MB 
+*  DICT_2M    2 097 152				~1.2 GB						 64 MB 
+*  DICT_4M    4 194 304				~2.4 GB						128 MB 
+*  DICT_8M    8 388 608				~4.7 GB						256 MB 
+*  DICT_16M  16 777 216				~9.4 GB						512 MB 
+*
+*  Memory formula :  slots × 563 bytes × nb_threads
+* 
+* 
 */
 typedef enum {
 	DICT_AUTOSIZE = 0, // Autosize the cache using a machine spec ratio
