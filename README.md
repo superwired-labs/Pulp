@@ -185,7 +185,7 @@ hardware in minutes.
 3. Open `LogProducer.vcxproj` in a new Visual Studio instance and build it.
 4. Copy `Pulp.dll` and `Pulp.lib` from `PULP/x64/Release/` into `LogProducer/x64/Release/`.
 5. Customize the test (paths, number of threads, PULP options) in `LogProducer.cpp` – it's straightforward.
-6. Run `LogProducer.exe` from the console.
+6. Click Run.
 
 Test datasets are included. Results (throughput, compression ratio, memory
 footprint, lost logs) are printed directly to the console.
