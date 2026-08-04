@@ -10,19 +10,16 @@ Copyright François Gauthier - Superwired-Labs
 
 ## Purpose & Scope
 
-**PULP** is a hardware-accelerated C logging engine engineered specifically for **high-throughput access logs, reverse proxies, API gateways, and edge telemetry**. 
+PULP is a native C library for Windows x64 that compresses structured data **at the source**, inside your own process, before it ever hits disk or network. Lossless semantic deduplication paired with LZ4 shrinks data 3–6×; IP anonymisation (AVX‑2) is applied inline; and a zero-allocation hot path sustains 20M+ logs/sec with fully deterministic memory.
 
-By enforcing a fixed-layout binary payload, PULP achieves **20M+ logs/second** on commodity hardware with low-lock contention and **lossless dictionary-based semantic pre-compression & deduplication**. 
-This intentional design trade-off prioritizes extreme hardware efficiency and memory predictability over arbitrary, dynamically-parsed schemas (like raw JSON).
+Link the DLL, call one function per log, and let compressed binary shards accumulate. A companion CLI (`PulpReader`) decodes them back to text or JSON whenever you need.
 
-Designed as a native C library for Windows x64, simply link the DLL, call one function per log line, and let compressed binary shards accumulate. A companion CLI (`PulpReader`) handles decoding back to text or JSON whenever needed.
+**Key numbers** (6‑core Ryzen 5 Pro 8640HS, NVMe SSD):
+- **+20 million logs/second** sustained throughput — including disk write, compression, anonymisation
+- **3–6× compression** on realistic structured logs (entropy 3,6–4,4 bits/byte)
+- **As low as 20 MB** memory footprint, fully deterministic under any load
 
-Want to verify the numbers? Drop the PULP DLL and Lib files into the LogProducer folder, run it on your own hardware (test datasets included), ready in under 5 minutes.
-
-**Key numbers (6‑core Ryzen 5 Pro 8640HS, NVMe SSD):**
-- **+20 million logs/second** sustained throughput
-- **~3-6:1 compression** on typical structured logs (semantic + LZ4)
-- **As low as 20 MB memory** footprint, fully deterministic 
+**Verify the numbers yourself**: `LogProducer` ships with embedded test datasets. Drop the DLL into the folder, run it on your hardware, results in under 5 minutes.
 
 ---
 
