@@ -391,20 +391,13 @@ Each block on disk consists of a lightweight header followed immediately by the 
 
 Once decompressed, the payload contains two primary sections delimited by 64-bit canary markers (`DICT_BEGIN` and `DICT_END`):
 
-+-------------------------------------------------------+
-|  Array of SerializedEntry Structs (32 bytes each)     |
-|  [Entry 0] [Entry 1] [Entry 2] ... [Entry N-1]        |
-+-------------------------------------------------------+
-|  DICT_BEGIN Canary (0xDEADBEEFCAFEBABE) – 8 bytes     |
-+-------------------------------------------------------+
-|  URL Dictionary                                       |
-|  [url_count (uint32_t)] [URL entries...]              |
-+-------------------------------------------------------+
-|  IP Dictionary                                        |
-|  [ip_count (uint32_t)] [IP entries...]                |
-+-------------------------------------------------------+
-|  DICT_END Canary (0xBEEFBABEDEADCAFE) – 8 bytes       |
-+-------------------------------------------------------+
+| Block Section | Content / Data Layout | Binary Size |
+| :--- | :--- | :--- |
+| **Record Array** | `SerializedEntry` `[0]` ... `[N-1]` | $N \times 32$ bytes |
+| **Canary Begin** | `DICT_BEGIN` (`0xDEADBEEFCAFEBABE`) | 8 bytes (`uint64_t`) |
+| **URL Dictionary** | `url_count` (`uint32_t`) + URL payload entries | Variable |
+| **IP Dictionary** | `ip_count` (`uint32_t`) + IP payload entries | Variable |
+| **Canary End** | `DICT_END` (`0xBEEFBABEDEADCAFE`) | 8 bytes (`uint64_t`) |
 
 #### A. Serialized Log Records Array (`SerializedEntry`)
 
