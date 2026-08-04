@@ -218,6 +218,7 @@ The dictionary persists across batches; once an entry is cached, all future occu
 You only need enough slots to hold your *current hot* working set (frequently repeated values), not every unique string ever seen.
 Undersized dictionaries perform very well, while oversized dictionaries can be slightly detrimental.
 The L1/L2/L3 hash cascade ensures fast lookup even under cache pressure.
+See the API header pulp.h for more details.
 
 Number of unique URL/IP values the per‑thread cache can hold.
 
