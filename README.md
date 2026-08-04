@@ -431,7 +431,7 @@ Once decompressed, the payload contains two primary sections delimited by 64-bit
  "log_rotation" : 1
  "log_refused_total" : 0
  "rotation_resync_total" : 0
- "throughput millions logs/s :" 26.49 
+ "throughput millions logs/s" : 26.49 
 }
 ```
 
