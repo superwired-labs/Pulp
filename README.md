@@ -19,6 +19,23 @@ Link the DLL, call one function per log, and let compressed binary shards accumu
 - **3–6× compression** on realistic structured logs (entropy 3,6–4,4 bits/byte)
 - **As low as 20 MB** memory footprint, fully deterministic under any load
 
+### What is Included in PULP's Measured Throughput (20M+ logs/sec)?
+
+PULP's benchmark throughput measures the complete end-to-end pipeline operating on realistic workloads:
+
+| Operation | Executed Inline by PULP | Typically Skipped in Competitor Benchmarks |
+| :--- | :---: | :---: |
+| **Disk Persistence** (NVMe binary write) | ✅ | Replaced by `/dev/null` or RAM buffer |
+| **Semantic Deduplication** (Persistent Dictionary) | ✅ | Not available in upstream loggers |
+| **LZ4 Stream Compression** | ✅ | Disabled or replaced by lighter algorithms |
+| **IP Anonymisation** (AVX2 vectorised) | ✅ | Requires separate downstream pipeline |
+| **URL Parameter Stripping** | ✅ | Requires regex parsing downstream |
+| **Automated File Rotation** (Handle Swap) | ✅ | Omitted from throughput calculations |
+| **High-Cardinality Stress** (5M+ unique values) | ✅ | Measured using low-cardinality fixed strings |
+| **Atomic Inter-Thread Sequencing** | ✅ | Omitted or un-sequenced |
+
+> **Summary:** While standard tools measure how fast they can discard or process logs in memory, PULP processes, sanitises, compresses, and writes full-fidelity logs to physical disk in a single pass.
+
 **Verify the numbers yourself**: `LogProducer` ships with embedded test datasets. Drop the DLL into the folder, run it on your hardware, results in under 5 minutes.
 
 ---
