@@ -12,7 +12,7 @@ Copyright François Gauthier - Superwired-Labs
 
 PULP is a native C library for Windows x64 that compresses structured data **at the source**, inside your own process, before it ever hits disk or network. Lossless semantic deduplication paired with LZ4 shrinks data 3–6×; IP anonymisation (AVX‑2) is applied inline; and a zero-allocation hot path sustains 20M+ logs/sec with fully deterministic memory.
 
-Link the DLL, call one function per log, and let compressed binary shards accumulate. A companion CLI (`PulpReader`) decodes them back to text or JSON whenever you need.
+Link the DLL, call one function per log, and let compressed binary shards accumulate. A companion CLI (`PulpReader`) decodes them back to text whenever you need.
 
 **Key numbers** (6‑core Ryzen 5 Pro 8640HS, NVMe SSD):
 - **+20 million logs/second** sustained throughput (including disk write, compression, optional anonymisation & parameter stripping)
