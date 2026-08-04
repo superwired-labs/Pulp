@@ -6,7 +6,3 @@ deps/** linguist-vendored
 
 # 2. Forcer la détection de tous les fichiers d'en-tête .h en C pur
 *.h linguist-language=C
-
-# 3. (Optionnel) Si vous avez des fichiers de tests ou benchmarks en C++ que vous souhaitez exclure
-tests/** linguist-documentation
-benchmark/** linguist-documentation
