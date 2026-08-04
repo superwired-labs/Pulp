@@ -224,21 +224,30 @@ Number of unique URL/IP values the per‑thread cache can hold.
 | `DICT_256K` | 262 144 | `BATCH_8MB` |
 | `DICT_512K` | 524 288 | `BATCH_16MB` |
 | `DICT_1M` | 1 048 576 | `BATCH_32MB` |
-| `DICT_2M` – `DICT_16M` | … | `BATCH_64MB` – `BATCH_512MB` |
+|`DICT_2M`	|2 097 152|	`BATCH_64MB`|
+|`DICT_4M`	|4 194 304|	`BATCH_128MB`|
+|`DICT_8M`	|8 388 608|	`BATCH_256MB`|
+|`DICT_16M`	|16 777 216|	`BATCH_512MB`|
 | `DICT_AUTOSIZE` | ~1/32 total RAM | auto |
 
 ### Batch size (`BatchSize`)
 
 Controls the flush threshold and the maximum in-flight logs (lost on a hard crash, power outage, etc. The write queue can also hold batches waiting to be processed).
 
-| Value | Max loss/thread |
-|-------|-----------------|
-| `BATCH_500KB` | ~15 600 |
-| `BATCH_1MB` | ~32 768 |
-| `BATCH_4MB` | ~131 072 |
-| `BATCH_16MB` | ~524 288 |
-| `BATCH_512MB` | ~16 777 216 |
-| `BATCH_AUTOSIZE` | auto |
+| Value | Size | Max loss per thread | Use case |
+|---|---|---|---|
+| `BATCH_500KB` | 500 KB | ~15 600 logs | Generally adequate, higher I/O usage, lower compression (less context) |
+| `BATCH_1MB` | 1 MB | ~32 768 logs | 
+| `BATCH_2MB` | 2 MB | ~65 536 logs | 
+| `BATCH_4MB` | 4 MB | ~131 072 logs |
+| `BATCH_8MB` | 8 MB | ~262 144 logs |
+| `BATCH_16MB` | 16 MB | ~524 288 logs |
+| `BATCH_32MB` | 32 MB | ~1 048 576 logs |
+| `BATCH_64MB` | 64 MB | ~2 097 152 logs |
+| `BATCH_128MB` | 128 MB | ~4 194 304 logs |
+| `BATCH_256MB` | 256 MB | ~8 388 608 logs | 
+| `BATCH_512MB` | 512 MB | ~16 777 216 logs | Generally higher compression, high memory usage, low I/O usage with write spikes |
+| `BATCH_AUTOSIZE` | auto | auto | Auto-selected by hardware |
 
 Flush is triggered by buffer pressure only (no timer). Call `Pulp_Shutdown()` to flush remaining logs on shutdown.
 
