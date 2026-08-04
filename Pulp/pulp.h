@@ -44,6 +44,10 @@
 
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*--------------------------------------------- STRUCTURES DEFINITION ---------------------------------------------*/
 
 /* Configurable dictionary size :
@@ -106,7 +110,7 @@ typedef enum {
 *    There's no real recommended minimum Batch Size, but tiny batches can be detrimental for performance in a millions logs/s env.
 *    Use the following formula to determine the max batch size :
 *    DICT_SIZE * 32768 = BATCH_SIZE in byte. 
-*    For instance : DICT_126K => 126 * 1024 * 32 = 4128768 bytes (so BATCH_4MB);
+*    For instance : DICT_128K => 128 * 1024 * 32 = 4 194 304 bytes (so BATCH_4MB);
 * 
 * => To estimate the number of in-flight logs : BATCH_SIZE / 32 = number_of_inflight_logs (per thread)
 *    (millions of logs/s with the highest compression ratio require millions of in-flight logs)
@@ -300,3 +304,7 @@ DLL_API void PulpFreeStats(char* stats_ptr);
 *  It displays a collection of STATS upon termination 
 */
 DLL_API void PulpShutdown();
+
+#ifdef __cplusplus
+}
+#endif
