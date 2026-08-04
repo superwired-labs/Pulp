@@ -68,7 +68,7 @@ Rather than using generic cross-platform wrappers, PULP leverages bare-metal Win
 - Native **Windows Thread Pool API** for asynchronous compression tasks.
 - Hardware-accelerated **AVX2 / SIMD intrinsics** tuned for x64 architecture.
 
-By committing fully to the Win32 ecosystem, PULP delivers line-rate ingestion with zero GC impact and a deterministic memory footprint under.
+By committing fully to the Win32 ecosystem, PULP delivers line-rate ingestion with zero GC impact and a deterministic memory footprint under any load.
 
 ---
 
