@@ -15,7 +15,7 @@ PULP is a native C library for Windows x64 that compresses structured data **at 
 Link the DLL, call one function per log, and let compressed binary shards accumulate. A companion CLI (`PulpReader`) decodes them back to text or JSON whenever you need.
 
 **Key numbers** (6‑core Ryzen 5 Pro 8640HS, NVMe SSD):
-- **+20 million logs/second** sustained throughput — including disk write, compression, anonymisation
+- **+20 million logs/second** sustained throughput (including disk write, compression, optional anonymisation & parameter stripping)
 - **3–6× compression** on realistic structured logs (entropy 3,6–4,4 bits/byte)
 - **As low as 20 MB** memory footprint, fully deterministic under any load
 
