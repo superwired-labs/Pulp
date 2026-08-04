@@ -1,2 +1,12 @@
-*.cpp linguist-language=C
-*.cc  linguist-language=C
+# 1. Signaler à GitHub que le dossier des dépendances tierces est du code externe (vendored)
+#    Linguist ignorera ces fichiers dans la barre des langages du dépôt.
+third_party/** linguist-vendored
+vendor/** linguist-vendored
+deps/** linguist-vendored
+
+# 2. Forcer la détection de tous les fichiers d'en-tête .h en C pur
+*.h linguist-language=C
+
+# 3. (Optionnel) Si vous avez des fichiers de tests ou benchmarks en C++ que vous souhaitez exclure
+tests/** linguist-documentation
+benchmark/** linguist-documentation
