@@ -391,6 +391,59 @@ Each block on disk consists of a lightweight header followed immediately by the 
 
 Once decompressed, the payload contains two primary sections delimited by 64-bit canary markers (`DICT_BEGIN` and `DICT_END`):
 
++-------------------------------------------------------+
+|  Array of SerializedEntry Structs (32 bytes each)     |
+|  [Entry 0] [Entry 1] [Entry 2] ... [Entry N-1]        |
++-------------------------------------------------------+
+|  DICT_BEGIN Canary (0xDEADBEEFCAFEBABE) – 8 bytes     |
++-------------------------------------------------------+
+|  URL Dictionary                                       |
+|  [url_count (uint32_t)] [URL entries...]              |
++-------------------------------------------------------+
+|  IP Dictionary                                        |
+|  [ip_count (uint32_t)] [IP entries...]                |
++-------------------------------------------------------+
+|  DICT_END Canary (0xBEEFBABEDEADCAFE) – 8 bytes       |
++-------------------------------------------------------+
+
+#### A. Serialized Log Records Array (`SerializedEntry`)
+
+The first portion of the decompressed payload consists of a contiguous array of fixed-size **32‑byte** `SerializedEntry` structures. Each entry captures a single log event with zero memory alignment padding gaps:
+
+| Field | Type | Size | Description |
+| :--- | :--- | :--- | :--- |
+| `sequence` | `uint64_t` | 8 bytes | Global atomic monotonic log sequence counter. |
+| `timestamp` | `uint64_t` | 8 bytes | High‑precision timestamp (e.g., Windows FILETIME, Unix microseconds). PULP itself does not interpret the value; it is application‑defined. |
+| `url_idx` | `uint32_t` | 4 bytes | Dictionary index mapping to the original URL string. |
+| `ip_idx` | `uint32_t` | 4 bytes | Dictionary index mapping to the original IP address string. |
+| `http_code` | `uint16_t` | 2 bytes | HTTP response status code (e.g., 200, 404, 500). |
+| `duration_ms` | `uint16_t` | 2 bytes | Request execution latency in milliseconds. |
+| `response_size` | `uint16_t` | 2 bytes | HTTP response payload size in bytes. |
+| `http_verb` | `uint8_t` | 1 byte | Enum identifier for HTTP method (GET, POST, PUT, etc.). |
+| `flags` | `uint8_t` | 1 byte | Bitmask flags (IP anonymisation state, parameter truncation, etc.). |
+
+#### B. Canary Markers
+
+To guarantee stream integrity, prevent out‑of‑bounds reading, and detect partial block writes (e.g., after an unexpected crash), PULP uses two 64‑bit magic constants:
+- **`DICT_BEGIN`** (`0xDEADBEEFCAFEBABE`): Marks the exact boundary between the `SerializedEntry` record array and the dictionary section.
+- **`DICT_END`** (`0xBEEFBABEDEADCAFE`): Marks the end of the decompressed block payload.
+
+#### C. Dictionary Sections
+
+Following `DICT_BEGIN`, the dictionary is split into two independent parts:
+- **URL Dictionary**: starts with a `uint32_t` count of entries, then that many URL entries.
+- **IP Dictionary**: starts with a `uint32_t` count of entries, then that many IP entries.
+
+Each individual entry has the following binary layout:
+
+| Field | Type | Size | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | `uint32_t` | 4 bytes | Unique integer key referenced by `url_idx` or `ip_idx` in `SerializedEntry`. |
+| `len` | `uint16_t` | 2 bytes | Length of the string payload including the trailing null terminator (`\0`). |
+| `data` | `char[]` | `len` bytes | Null‑terminated raw string. |
+
+> **Parser Behavior (`pulpReader.c`):** The reader processes the array up to `DICT_BEGIN` to extract all log events, builds a sparse lookup table from the dictionary entries up to `DICT_END`, and reconstructs full text log entries on the fly with zero dynamic memory allocation overhead on the hot path.
+
 ---
 
 ## Live Telemetry
