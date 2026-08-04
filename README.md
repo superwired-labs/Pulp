@@ -213,6 +213,12 @@ For detailed parameter descriptions, see the API header `pulp.h`.
 
 ### Cache size (`DictSize`)
 
+> **How the dictionary achieves high compression with few slots**: Even with only 16K slots, PULP can handle millions of unique URLs/IPs over time. 
+The dictionary persists across batches; once an entry is cached, all future occurrences reference the same index. 
+You only need enough slots to hold your *current hot* working set (frequently repeated values), not every unique string ever seen.
+Undersized dictionaries perform very well, while oversized dictionaries can be slightly detrimental.
+The L1/L2/L3 hash cascade ensures fast lookup even under cache pressure.
+
 Number of unique URL/IP values the per‑thread cache can hold.
 
 | Value | Slots | Recommended batch |
