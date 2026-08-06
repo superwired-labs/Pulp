@@ -443,40 +443,13 @@ static inline char* AnonIp(const char* ip, int ip_anon_lvl, uint8_t isIpv6, Thre
 	if (addr_end + suffix_len >= sizeof(ctx->ipdest))
 		suffix_len = sizeof(ctx->ipdest) - addr_end - 1;
 
-	/* Prepare the mask per byte */
-	uint8_t mask[80];
-	memset(mask, 0, sizeof(mask));
+	memcpy(dst, ip, addr_end);
 
-	for (size_t i = 0; i < addr_end; ++i) {
-		char c = ip[i];
-		/* Exclude . : [] from masking */
-		if (i >= mask_start && c != ':' && c != '[' && c != ']' && c != '.')
-			mask[i] = 1;
+	for (size_t i = mask_start; i < addr_end; ++i) {
+		char c = dst[i];
+		if (c != ':' && c != '.' && c != '[' && c != ']')
+			dst[i] = 'x';
 	}
-
-	/* AVX2 */
-	const size_t vec_sz = 32;
-	size_t pos = 0;
-
-	if (addr_end >= vec_sz) {
-		const __m256i xx_vec = _mm256_set1_epi8('x');
-		const __m256i zero = _mm256_setzero_si256();
-
-		for (; pos + vec_sz <= addr_end; pos += vec_sz) {
-			__m256i src_vec = _mm256_loadu_si256((const __m256i*)(ip + pos));
-			__m256i mask_vec = _mm256_loadu_si256((const __m256i*)(mask + pos));
-			__m256i blend = _mm256_cmpgt_epi8(mask_vec, zero);
-			__m256i res = _mm256_blendv_epi8(src_vec, xx_vec, blend);
-			_mm256_storeu_si256((__m256i*)(dst + pos), res);
-		}
-
-#if defined(_M_X64) || defined(_WIN64)
-		_mm256_zeroupper();
-#endif
-	}
-
-	for (; pos < addr_end; ++pos)
-		dst[pos] = mask[pos] ? 'x' : ip[pos];
 
 	/* Guarantee NUL termination */
 	if (suffix_len > 0) {
@@ -949,7 +922,7 @@ ThreadContext* InitThreadContext() {
 			return NULL;
 		}
 
-		// Garantit qu'aucun pointeur non initialisé ne traîne
+		// Ensure no uninitialized pointers are lingering
 		ZeroMemory(ctx, sizeof(ThreadContext));
 
 		// 3. Initialize basic parameters & Synchronization primitives
@@ -969,30 +942,30 @@ ThreadContext* InitThreadContext() {
 		LOG_DEBUG("InitThreadContext Buffer capacity %zu (buffer size: %u, entry size: %llu)",
 			ctx->buffer_capacity, g_buffer_size, sizeof(SerializedEntry));
 
-		// --- Scratch buffers d'indexation (Capacité en NOMBRE D'ÉLÉMENTS uint32_t) ---
+		// --- Scratch buffers for indexing (Capacity in NUMBER OF ELEMENTS uint32_t) ---
 		ctx->nb_urls_dicts = (uint32_t*)_aligned_malloc(ctx->buffer_capacity * sizeof(uint32_t), 32);
-		ctx->nb_urls_dicts_size = ctx->buffer_capacity; // Nb d'éléments
+		ctx->nb_urls_dicts_size = ctx->buffer_capacity; // Number of elements
 
 		ctx->nb_ips_dicts = (uint32_t*)_aligned_malloc(ctx->buffer_capacity * sizeof(uint32_t), 32);
-		ctx->nb_ips_dicts_size = ctx->buffer_capacity; // Nb d'éléments
+		ctx->nb_ips_dicts_size = ctx->buffer_capacity; // Number of elements
 
-		// --- Allocation de DICTBUF (Calcul exact du pire cas en OCTETS) ---
-		// Canaries (16B) + En-têtes counts (8B) + (URL_meta + MAX_URL_LEN + IP_meta + IP_SIMD_LEN) * capacity + align (32B)
+		// --- Allocation of DICTBUF (Exact worst-case calculation in BYTES) ---
+		// Canaries (16B) + Header counts (8B) + (URL_meta + MAX_URL_LEN + IP_meta + IP_SIMD_LEN) * capacity + align (32B)
 		ctx->dictbuf_size = sizeof(DICT_BEGIN) + sizeof(DICT_END) + (sizeof(uint32_t) * 2) +
 			ctx->buffer_capacity * (sizeof(uint32_t) + sizeof(uint16_t) + MAX_URL_LEN +
 				sizeof(uint32_t) + sizeof(uint16_t) + 96) + 32;
 
 		ctx->dictbuf = _aligned_malloc(ctx->dictbuf_size, 32);
 
-		// --- Allocation de DATABUF (Taille exacte en OCTETS) ---
-		ctx->databuf_size = ctx->buffer_capacity * sizeof(SerializedEntry); // Équivalent à g_buffer_size
+		// --- Allocation of DATABUF (Exact size in BYTES) ---
+		ctx->databuf_size = ctx->buffer_capacity * sizeof(SerializedEntry); // Equivalent to g_buffer_size
 		ctx->databuf = _aligned_malloc(ctx->databuf_size, 32);
 
-		// --- Allocation de PENDING_BUFFER (Taille exacte en OCTETS) ---
+		// --- Allocation of PENDING_BUFFER (Exact size in BYTES) ---
 		ctx->pending_buffer_size = ctx->databuf_size + ctx->dictbuf_size;
 		ctx->pending_buffer = _aligned_malloc(ctx->pending_buffer_size, 32);
 
-		// Vérification globale des allocations de buffers
+		// Global check of buffer allocations
 		if (!ctx->pending_buffer || !ctx->databuf || !ctx->dictbuf ||
 			!ctx->nb_urls_dicts || !ctx->nb_ips_dicts) {
 			char msg[256];

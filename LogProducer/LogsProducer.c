@@ -248,12 +248,12 @@ int main(void) {
         "C:\\AltLogspath",         // Hot Swap backup (if main path fails)
         "C:\\logs\\error",         // Error file path
         1,                         // Inter-thread atomic numeration (1 == ON, 0 == OFF)
-        ANON_IP_3,              // IP Anon
+        ANON_IP_1,              // IP Anon
         1,                         // Truncate params on resource field (1 == ON, 0 == OFF)
 		128,                       // Batches per file before rotation (must be power of two, default 128)
         COMPRESSION_BALANCED,      // Compression level
-        BATCH_500KB,               // Batch size
-        DICT_16K                   // Dictionnary size (nb entries)
+        BATCH_1MB,               // Batch size
+        DICT_32K                   // Dictionnary size (nb entries)
     );
     printf("LogInit status : %d %s\n", rtn, rtn == 0 ? "OK" : rtn == 17 ? "WARN" : "FAILED");
     if (rtn != 0) return 0;
