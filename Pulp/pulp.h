@@ -158,10 +158,10 @@ typedef enum {
 
 /* IP anonynimisation levels :
 *  ANON_IP_NONE = no anonymisation (192.168.2.23)
-*  ANON_IP_1_BYTE = 192.168.2.0
-*  ANON_IP_2_BYTES = 192.168.0.0
-*  ANON_IP_3_BYTES = 192.0.0.0
-*  ANON_IP_4_BYTES = 0.0.0.0
+*  ANON_IP_1_BYTE = 192.168.2.x
+*  ANON_IP_2_BYTES = 192.168.x.x
+*  ANON_IP_3_BYTES = 192.x.x.x
+*  ANON_IP_4_BYTES = x.x.x.x
 */
 typedef enum {
 	ANON_IP_NONE = 0,
