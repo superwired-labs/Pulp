@@ -204,28 +204,28 @@ static inline int ClassifyIpFast(const char* s, size_t n)
 			dot_cnt++;
 			last_dot = (int)i;
 		}
-		/* Détection rapide de caractères incompatibles avec une IP pure/port */
+		/* Quick detection of characters incompatible with a pure IP/port */
 		else if ((c < '0' || c > '9') && (c < 'a' || c > 'f') && (c < 'A' || c > 'F') &&
 			c != '/' && c != '%' && c != '[' && c != ']') {
-			invalid_char = 1; // Contient des lettres non-hex (ex: http, domain)
+			invalid_char = 1; // Contains non-hex letters (e.g., http, domain)
 		}
 	}
 
-	/* Si la chaîne contient des caractères non autorisés dans une IP -> Non-IP */
+	/* If the string contains characters not allowed in an IP -> Non-IP */
 	if (invalid_char)
 		return -1;
 
-	/* Pas de deux-points -> IPv4 valide (ex: 192.168.1.1) ou invalide */
+	/* No colons -> Valid IPv4 (e.g., 192.168.1.1) or invalid */
 	if (colon_cnt == 0) {
 		return (dot_cnt == 3) ? 0 : -1;
 	}
 
-	/* Présence de double deux-points ou aucun point -> IPv6 pur ou compressé */
+	/* Presence of double colons or no dots -> Pure or compressed IPv6 */
 	if (dot_cnt == 0 || has_double_colon) {
 		return 1;
 	}
 
-	/* Cas mixte IPv4 + Port (ex: 192.168.1.1:8080) vs IPv6-embedded */
+	/* Mixed case IPv4 + Port (e.g., 192.168.1.1:8080) vs IPv6-embedded */
 	if (last_colon > last_dot) {
 		return (colon_cnt == 1 && dot_cnt == 3) ? 0 : 1;
 	}
