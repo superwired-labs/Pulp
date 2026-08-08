@@ -19,6 +19,8 @@ Link the DLL, call one function per log, and let compressed binary shards accumu
 - **3–6× compression** on realistic structured logs (entropy 3,6–4,4 bits/byte)
 - **As low as 20 MB** memory footprint, fully deterministic under any load
 
+> ⭐ **Star this repo if you find it useful** — it helps others discover PULP.
+
 ### What is Included in PULP's Measured Throughput (20M+ logs/sec)?
 
 PULP's benchmark throughput measures the complete end-to-end pipeline operating on realistic workloads:
