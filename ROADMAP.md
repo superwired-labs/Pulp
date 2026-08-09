@@ -20,19 +20,13 @@ Priorities may adjust based on community feedback, sponsor requests, and contrib
 
 \- \[ ] \*\*Enhanced Integration Examples:\*\* Complete sample projects for IIS native C++ modules and C# / .NET P/Invoke integrations.
 
-\- \[ ] \*\*Queryable archives\*\* Selective indexing layer for forensic analysis.
-  - Lightweight inline filter extracts flagged events (errors, 5xx, security alerts) during `PulpWrite()` into a sidecar index (SQLite/structured store).
-  - Query the index by time range, status code, or endpoint to identify relevant `.bin` shards.
-  - Decode only matching shards to full text via `PulpReader` for complete context retrieval.
-  - Architecture: hot index (small, queryable) + cold storage (compressed `.bin` archives), avoiding the throughput penalty of full-stream database insertion.
-
 
 
 \---
 
 
 
-\### Medium Priority / Exploratory
+\### Medium Priority
 
 \- \[ ] \*\*Scalar / Non-AVX2 Fallback:\*\* Graceful fallback path for older CPU architectures.
 
@@ -50,7 +44,11 @@ Priorities may adjust based on community feedback, sponsor requests, and contrib
 
 \- \[ ] \*\*Multi-Socket NUMA Optimizations:\*\* Lock-free inter-process allocations for hyper-scale (>64 core) architectures.
 
-
+\- \[ ] \*\*Queryable archives\*\* Selective indexing layer for forensic analysis.
+  - Lightweight inline filter extracts flagged events (errors, 5xx, security alerts) during `PulpWrite()` into a sidecar index (SQLite/structured store).
+  - Query the index by time range, status code, or endpoint to identify relevant `.bin` shards.
+  - Decode only matching shards to full text via `PulpReader` for complete context retrieval.
+  - Architecture: hot index (small, queryable) + cold storage (compressed `.bin` archives), avoiding the throughput penalty of full-stream database insertion.
 
 \---
 
