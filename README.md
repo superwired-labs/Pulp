@@ -10,14 +10,15 @@ Copyright François Gauthier - Superwired-Labs
 
 ## Purpose & Scope
 
-PULP is a native C library for Windows x64 that compresses structured data **at the source**, inside your own process, before it ever hits disk or network. Lossless semantic deduplication paired with LZ4 shrinks data 3–6×; IP anonymisation (AVX‑2) is applied inline; and a zero-allocation hot path sustains 20M+ logs/sec with fully deterministic memory.
+PULP is a native C library for Windows x64 that compresses structured data **at the source**, inside your own process, before it ever hits disk or network. Lossless semantic deduplication paired with LZ4 shrinks data 3–6×; IP anonymisation is applied inline; and a zero-allocation on the producer hot path sustains 20M+ logs/sec with fully deterministic memory.
 
 Link the DLL, call one function per log, and let compressed binary shards accumulate. A companion CLI (`PulpReader`) decodes them back to text whenever you need.
 
 **Key numbers** (6‑core Ryzen 5 Pro 8640HS, NVMe SSD):
-- **+20 million logs/second** sustained throughput (including disk write, compression, optional anonymisation & parameter stripping)
-- **3–6× compression** on realistic structured logs (entropy 3,6–4,4 bits/byte)
-- **As low as 20 MB** memory footprint, fully deterministic under any load
+* **Up to 21.7M logs/second** sustained throughput (High-Performance mode, 6 threads, ~105 MB RAM)
+* **8.5M logs/second at ~16 MB RAM** (Eco mode, single thread, ultra-low footprint)
+* **3–6× lossless end-to-end compression** on realistic structured logs (preprocessing + LZ4)
+* 0 logs lost, 0 backpressure under heavy adversarial stress
 
 > ⭐ **Star this repo if you find it useful**; it helps others discover PULP.
 
@@ -30,7 +31,7 @@ PULP's benchmark throughput measures the complete end-to-end pipeline operating 
 | **Disk Persistence** (NVMe binary write) | ✅ | Replaced by `/dev/null` or RAM buffer |
 | **Semantic Deduplication** (Persistent Dictionary) | ✅ | Not available in upstream loggers |
 | **LZ4 Stream Compression** | ✅ | Disabled or replaced by lighter algorithms |
-| **IP Anonymisation** (AVX2 vectorised) | ✅ | Requires separate downstream pipeline |
+| **IP Anonymisation**  | ✅ | Requires separate downstream pipeline |
 | **URL Parameter Stripping** | ✅ | Requires regex parsing downstream |
 | **Automated File Rotation** (Handle Swap) | ✅ | Omitted from throughput calculations |
 | **High-Cardinality Stress** (5M+ unique values) | ✅ | Measured using low-cardinality fixed strings |
@@ -48,7 +49,7 @@ PULP's benchmark throughput measures the complete end-to-end pipeline operating 
 |----------------|-------------------|
 | You build a high‑traffic web server, proxy, or firewall on Windows and need to log millions of requests per second. | PULP compresses on the fly and writes directly to disk, keeping CPU and memory usage predictable. |
 | You want to reduce the cost of log storage and network egress. | Lossless semantic pre‑compression plus LZ4 typically shrinks structured data by a factor of 3–5×. |
-| You are legally required to anonymise IP addresses before storing logs. | On-the-fly AVX‑2 accelerated masking works on both IPv4 and IPv6, with configurable levels. |
+| You are legally required to anonymise IP addresses before storing logs. | On-the-fly masking works on both IPv4 and IPv6, with configurable levels. |
 | You need an audit‑proof, corruption‑resiliant binary archive for compliance. | PULP batches are self‑contained and can be decoded years later with the supplied command‑line tool. |
 | You already have a log collector (Fluent Bit, Vector, etc.) and just want a faster writer. | PULP outputs compressed `.bin` files that any collector can ship; you decide when and how to move them. |
 | You don't want to manage a separate logging service or daemon. | PULP is a single DLL, linked statically or dynamically into your own process. No extra process, no network ports, no heavy configuration. |
@@ -68,7 +69,6 @@ On Windows Server, which powers critical IIS infrastructure, high-throughput ent
 Rather than using generic cross-platform wrappers, PULP leverages bare-metal Windows primitives:
 - Direct **Thread-Local Storage (TLS)** for zero-contention hot path ingestion.
 - Native **Windows Thread Pool API** for asynchronous compression tasks.
-- Hardware-accelerated **AVX2 / SIMD intrinsics** tuned for x64 architecture.
 
 By committing fully to the Win32 ecosystem, PULP delivers line-rate ingestion with zero GC impact and a deterministic memory footprint under any load.
 
@@ -76,7 +76,7 @@ By committing fully to the Win32 ecosystem, PULP delivers line-rate ingestion wi
 
 ## Features
 
-- **Blazing fast** – zero‑allocation hot path, per‑thread TLS caches, zero-eviction temporal cache, custom SIMD‑accelerated IP masking (AVX‑2).
+- **Blazing fast** – zero‑allocation producer hot path, per‑thread TLS caches, zero-eviction temporal cache, custom IP masking.
 - **On‑the‑fly compression** – lossless semantic precompression paired with LZ4 reduces I/O volume before writing to disk.
 - **Deterministic memory footprint** – no memory spikes during activity surges; the architecture absorbs load seamlessly.
 - **Dual‑mode IP anonymisation** – configurable masking for IPv4 and IPv6, including support for CIDR, zones, and compressed addresses.
@@ -117,8 +117,7 @@ Performance depends on the hardware, the number of threads, the data entropy, ca
 
 ## Requirements
 
-- Windows 10 / 11 or Windows Server 2016+ (x64).
-- CPU with **AVX2** support (all modern x86‑64 processors).  
+- Windows 10 / 11 or Windows Server 2016+ (x64).  
 - Visual Studio 2022 (solution provided).
 
 ---
@@ -203,8 +202,8 @@ The public API is declared in **`pulp.h`** and exported by `pulp.dll`.
 |----------|-------------|
 | `uint8_t PulpInit(...)` | One‑time global initialisation. Configures paths, IP anonymisation, compression level, buffer/cache sizes and internal thread pools. Must be called before any other API function. |
 | `uint16_t PulpWrite(...)` | Hot‑path logging function. Accepts a URL, HTTP status, IP, timing, etc. Returns a packed status: high byte = system error, low byte = backpressure level. |
-| `char* PulpGetStats()` | Returns a JSON string containing live telemetry (throughput, cache hit ratios, compression ratio, queue depth, errors). The caller must free the string with `Pulp_FreeStats()`. |
-| `void PulpFreeStats(char* p)` | Frees a statistics string previously obtained from `Pulp_GetStats()`. |
+| `char* PulpGetStats()` | Returns a JSON string containing live telemetry (throughput, cache hit ratios, compression ratio, queue depth, errors). The caller must free the string with `PulpFreeStats()`. |
+| `void PulpFreeStats(char* p)` | Frees a statistics string previously obtained from `PulpGetStats()`. |
 | `void PulpShutdown()` | Graceful shutdown: flushes all pending data, waits for compression and writes to complete, releases all resources. |
 
 For detailed parameter descriptions, see the API header `pulp.h`.
@@ -258,7 +257,7 @@ Controls the flush threshold and the maximum in-flight logs (lost on a hard cras
 | `BATCH_512MB` | 512 MB | ~16 777 216 logs | Generally higher compression, high memory usage, low I/O usage with write spikes |
 | `BATCH_AUTOSIZE` | auto | auto | Auto-selected by hardware |
 
-Flush is triggered by buffer pressure only (no timer). Call `Pulp_Shutdown()` to flush remaining logs on shutdown.
+Flush is triggered by buffer pressure only (no timer). Call `PulpShutdown()` to flush remaining logs on shutdown.
 
 ### Compression level (`Lz4CompressionLevel`)
 
@@ -346,7 +345,7 @@ factor. You can measure savings on your own workloads using the included
 ## Architecture Overview
 
 ```
-Pulp_Write()  →  TLS context  →  URL/IP cache  →  active buffer
+PulpWrite()  →  TLS context  →  URL/IP cache  →  active buffer
                     ↑                                ↓ (buffer full)
                     |                             PulpFlush()
                     |                                ↓
@@ -437,7 +436,7 @@ Each individual entry has the following binary layout:
 | `len` | `uint16_t` | 2 bytes | Length of the string payload including the trailing null terminator (`\0`). |
 | `data` | `char[]` | `len` bytes | Null‑terminated raw string. |
 
-> **Parser Behavior (`pulpReader.c`):** The reader processes the array up to `DICT_BEGIN` to extract all log events, builds a sparse lookup table from the dictionary entries up to `DICT_END`, and reconstructs full text log entries on the fly with zero dynamic memory allocation overhead on the hot path.
+> **Parser Behavior (`pulpReader.c`):** The reader processes the array up to `DICT_BEGIN` to extract all log events, builds a sparse lookup table from the dictionary entries up to `DICT_END`, and reconstructs full text log entries on the fly with zero dynamic memory allocation overhead on the producer hot path.
 
 ---
 
