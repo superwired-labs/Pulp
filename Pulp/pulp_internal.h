@@ -64,7 +64,7 @@
 #define IP_ANON_DEFAULT             ANON_IP_NONE                      // No anon by default
 #define TIMEOUT_MS                  500
 #define SPIN_LIMIT                  20
-#define FLUSH_PER_FILE_DEFAULT      32                                // Have to be power of 2. file size = FLUSH_PER_FILE_DEFAULT * BUFFER SIZE (default is 32 * 64 MB)
+#define FLUSH_PER_FILE_DEFAULT      512                                // Have to be power of 2. file size = FLUSH_PER_FILE_DEFAULT * BUFFER SIZE (default is 512 * 64 MB)
 #define LO_PRESSURE                 0.6
 #define MED_PRESSURE                0.75
 #define HI_PRESSURE                 0.9

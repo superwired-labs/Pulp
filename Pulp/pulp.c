@@ -146,37 +146,15 @@ static inline const char* StripBrackets(const char* s, size_t* len)
 	return s;
 }
 
-static inline unsigned Ms_ctz(uint32_t v)          // count‑trailing‑zeros
-{
-#if defined(_M_X64) || defined(_M_IX86)
-	unsigned idx;
-	// _tzcnt_u32 is faster than _BitScanForward when available
-	// (it is part of BMI1/BMI2, present on all AVX2 CPUs).
-	idx = (unsigned)_tzcnt_u32(v);
-	return idx;                     // if v==0, _tzcnt_u32 returns 32 → ok here
-#else
-	unsigned long idx;
-	_BitScanForward(&idx, v);
-	return (unsigned)idx;
-#endif
-}
 
-static inline unsigned Ms_clz(uint32_t v)          // count‑leading‑zeros
-{
-	unsigned long idx;
-	_BitScanReverse(&idx, v);       // idx = position of the highest bit (0‑based)
-	return 31u - (unsigned)idx;     // 31‑idx = number of leading zeros
-}
-
-
-/* ---------------------------------------------------------------------------
- *  IP / Protocol Classifier (Ultra-Fast Scalar Single-Pass)
- *
- *  Returns:
- *   0 = IPv4 (or IPv4 + port)
- *   1 = IPv6 (or IPv6 + port / compressed)
- *  -1 = Invalid / non-IP / Domain name
- * --------------------------------------------------------------------------- */
+ /* ---------------------------------------------------------------------------
+  *  IP / Protocol Classifier (Ultra-Fast Scalar Single-Pass)
+  *
+  *  Returns:
+  *   0 = IPv4 (or IPv4 + port)
+  *   1 = IPv6 (or IPv6 + port / compressed / zone-ID)
+  *  -1 = Invalid / non-IP / Domain name
+  * --------------------------------------------------------------------------- */
 static inline int ClassifyIpFast(const char* s, size_t n)
 {
 	s = StripBrackets(s, &n);
@@ -190,6 +168,8 @@ static inline int ClassifyIpFast(const char* s, size_t n)
 	int has_double_colon = 0;
 	int invalid_char = 0;
 	int prev_was_colon = 0;
+	int after_zone_marker = 0;  // NEW: Track if we've seen a '%'
+	int zone_has_valid_chars = 0;
 
 	for (size_t i = 0; i < n; ++i) {
 		unsigned char c = s[i];
@@ -211,9 +191,37 @@ static inline int ClassifyIpFast(const char* s, size_t n)
 			((c >= 'a') & (c <= 'f')) |
 			((c >= 'A') & (c <= 'F'));
 
+		/* NEW: Allow alphabetic chars after '%' for zone-IDs */
+		int is_alpha =
+			((c >= 'a') & (c <= 'z')) |
+			((c >= 'A') & (c <= 'Z'));
+
 		int is_punct = is_dot | is_colon | (c == '%');
 
-		invalid_char |= !(is_hex | is_punct);
+		/* After zone marker, allow alphanumeric + hyphen/underscore */
+		if (after_zone_marker) {
+			if (!(is_hex | is_alpha | (c == '-') | (c == '_'))) {
+				invalid_char = 1;
+			}
+			if (is_alpha | is_hex) {
+				zone_has_valid_chars = 1;
+			}
+		}
+		else {
+			/* Before zone marker: hex, dots, colons, and zone marker itself */
+			invalid_char |= !(is_hex | is_punct);
+
+			/* Zone marker detected */
+			if (c == '%') {
+				after_zone_marker = 1;
+				zone_has_valid_chars = 0;
+			}
+		}
+	}
+
+	/* If zone ID was present but had no valid chars, it's invalid */
+	if (after_zone_marker && !zone_has_valid_chars) {
+		return -1;
 	}
 
 	if (invalid_char)
@@ -252,7 +260,7 @@ static inline int ClassifyIpFast(const char* s, size_t n)
 
 
 /* ---------------------------------------------------------------------------
- *  IP Anonymization (AVX2)
+ *  IP Anonymization Scalar
  *
  *  Masks IPv4/IPv6 addresses with 'x'. Supports RFC 4291, CIDR, zones,
  *  and port suffixes. Processing is zero-allocation.
@@ -261,7 +269,7 @@ static inline int ClassifyIpFast(const char* s, size_t n)
  *           DO NOT free() or store for cross-thread use.
  *
  *  @note:   Input max length is 79 chars (MAX_IPV6_LEN).
- *  @hw:     Requires AVX2. No fallback needed on modern x86-64 CPUs.
+ *  @hw:     Scalar implementation.
  * --------------------------------------------------------------------------- */
 
 static inline char* AnonIp(const char* ip, int ip_anon_lvl, uint8_t isIpv6, ThreadContext* ctx)
@@ -345,7 +353,7 @@ static inline char* AnonIp(const char* ip, int ip_anon_lvl, uint8_t isIpv6, Thre
 		return dst;
 	}
 
-	/* ---------- IPv6 (AVX2) ---------- */
+	/* ---------- IPv6 ---------- */
 
 	const size_t max_addr_len = 80;
 	size_t src_len = 0;
@@ -508,6 +516,10 @@ static inline uint32_t GetBucketFromHash(uint64_t hash, uint32_t k){
  *   Packed uint64_t: [ URL Index (32 bits) | IP Index (32 bits) ]
  *   Returns UINT32_MAX in respective 32-bit word if a cache is saturated.
  *============================================================================*/
+ /* NOTE: Asymmetrical cache exhaustion (e.g. URL fits but IP fails)
+  * is mathematically impossible. Both caches share the same capacity (g_cache_size)
+  * and the batch size is clamped to never exceed this capacity.
+ */
 uint64_t CacheAddOrGet(
 	CacheEntryURL* cacheURL, CacheEntryIPV6* cacheIP, uint64_t size, 
 	char* url_param, uint32_t url_len, 
@@ -530,7 +542,7 @@ uint64_t CacheAddOrGet(
 		const char* key = url_param;
 		LOG_DEBUG("CacheAddorGet begin : %s %d", key, (int)local_url_len);
 		// 1. Try the primary bucket with CityHash64 + quick probe if necessary
-		uint16_t i;
+		size_t i;
 		for (i = 0; i < PROBE_RANGE_PRIMARY; i++) {
 			uint32_t idx = (bucket + i) & (size - 1);  // Simple linear probing
 			CacheEntryURL* entry = &cacheURL[idx];
@@ -676,7 +688,7 @@ IP :
 		const char* key = ip_param;
 		LOG_DEBUG("CacheAddorGet begin : %s %d", key, (int)ip_len);
 		// 1. Try the primary bucket with CityHash64 + quick probe if necessary
-		uint16_t i;
+		size_t i;
 		for (i = 0; i < PROBE_RANGE_PRIMARY; i++)
 		{
 			uint32_t idx = (bucket + i) & (size - 1);  // Simple linear probing
@@ -1398,7 +1410,7 @@ uint16_t PulpWrite(
 	// -------------------------------------------------------------------------
 	uint64_t seq = enable_sequence ? (uint64_t)InterlockedIncrement64(&global_sequence) : 0;
 
-	if (ip_anon_lvl != ANON_IP_NONE) {
+	if (ip_anon_lvl != ANON_IP_NONE && ip && ip_len > 0) {
 		int8_t isipv6 = ClassifyIpFast(ip, ip_len);
 		if (isipv6 >= 0) {
 			AnonIp(ip, ip_anon_lvl, isipv6, ctx);
@@ -1406,7 +1418,7 @@ uint16_t PulpWrite(
 		else {
 			// Fallback if the IP is malformed/unrecognized: secure raw copy
 			if (ip && ip_len > 0) {
-				uint32_t copy_len = (ip_len < 95) ? ip_len : 95;
+				uint32_t copy_len = (ip_len < MAX_IPV6_LEN) ? ip_len : MAX_IPV6_LEN;
 				memcpy(ctx->ipdest, ip, copy_len);
 				ctx->ipdest[copy_len] = '\0';
 			}
@@ -1418,7 +1430,7 @@ uint16_t PulpWrite(
 	else {
 		// Normal case: Secure bounded copy to prevent overflow with non-null-terminated strings
 		if (ip && ip_len > 0) {
-			uint32_t copy_len = (ip_len < 95) ? ip_len : 95;
+			uint32_t copy_len = (ip_len < MAX_IPV6_LEN) ? ip_len : MAX_IPV6_LEN;
 			memcpy(ctx->ipdest, ip, copy_len);
 			ctx->ipdest[copy_len] = '\0';
 		}
@@ -1450,8 +1462,13 @@ RETRY:
 			__LINE__, ctx->buffer_capacity, g_buffer_size, GetCurrentThreadId());
 		LOG_ERROR("%s", msg);
 		WriteError(herror, msg);
-
-		// Force buffer flush and dynamically adapt thread capacity
+ 
+		/* * ARCHITECTURE NOTE:
+		* Force buffer flush and dynamically adapt thread capacity.
+		* We dynamically clamp the batch capacity to the dictionary size.
+		* This is memory-safe because our init preset guarantees that the
+		* physically allocated batch slots are >= g_cache_size.
+		*/
 		PulpFlush(ctx);
 		Sleep(0);
 		ctx->buffer_capacity = g_cache_size;
@@ -1510,7 +1527,7 @@ RETRY:
 	// -------------------------------------------------------------------------
 	// 7. Automatic Buffer Flush Trigger
 	// -------------------------------------------------------------------------
-	if (ctx->active_count >= ctx->buffer_capacity) {
+	if (ctx->active_count + (ctx->buffer_capacity >> 5) >= ctx->buffer_capacity) {
 		STATS_INC64(batch_flushed_total);
 		rtn_code_hi = PulpFlush((void*)NULL);
 	}

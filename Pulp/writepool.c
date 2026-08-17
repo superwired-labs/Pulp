@@ -170,9 +170,13 @@ DWORD WINAPI WriteThread(LPVOID param) {
 					}
 					ReleaseSRWLockShared(&task.ctx->file_lock);
 
-					// Only create if still invalid after waking
+					// Double-check under exclusive lock before creating
 					if (task.ctx->file_handle == INVALID_HANDLE_VALUE) {
-						task.ctx->file_handle = CreateNewShard();
+						AcquireSRWLockExclusive(&task.ctx->file_lock);
+						if (task.ctx->file_handle == INVALID_HANDLE_VALUE) {
+							task.ctx->file_handle = CreateNewShard();
+						}
+						ReleaseSRWLockExclusive(&task.ctx->file_lock);
 					}
 
 					if (tries++ < 3)
@@ -193,13 +197,13 @@ DWORD WINAPI WriteThread(LPVOID param) {
 				tries = 0;
 				for (;;) {
 					DWORD written = 0;
-					AcquireSRWLockShared(&task.ctx->file_lock);
+					AcquireSRWLockExclusive(&task.ctx->file_lock);
 					BOOL ok = WriteFile(task.ctx->file_handle,
 						(BYTE*)task.data + total,
 						(DWORD)(task.size - total),
 						&written,
 						NULL);
-					ReleaseSRWLockShared(&task.ctx->file_lock);
+					ReleaseSRWLockExclusive(&task.ctx->file_lock);
 
 					if (!ok) {
 						DWORD err = GetLastError();
