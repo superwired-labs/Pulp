@@ -54,6 +54,18 @@ Instead, report it privately via email to:
 3. **Patch Release:** Security patches will be merged and released promptly alongside a disclosure notice crediting your research (unless requested otherwise).
 
 
+## Credits
 
+We thank the following individuals for responsible disclosure of security issues:
+
+- **Jan Kucera** – *August 2026*  
+  GitHub: [@hclivess](https://github.com/hclivess/)  
+  Comprehensive static analysis audit uncovering critical vulnerabilities including:  
+  - Out-of-bounds memory access in IP dictionary
+  - Infinite loop in cache full-scan
+  - Concurrent WriteFile race condition
+  - Lost-wakeup deadlock on shutdown
+
+If you'd like to be credited for your contributions, please indicate so in your report.  
 Thank you for helping keep PULP secure, reliable, and production-ready.
 
