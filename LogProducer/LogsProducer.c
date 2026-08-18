@@ -252,8 +252,8 @@ int main(void) {
         0,                         // Truncate params on resource field (1 == ON, 0 == OFF)
 		1024,                       // Batches per file before rotation (must be power of two, default 512)
         COMPRESSION_BALANCED,      // Compression level
-        BATCH_512MB,               // Batch size
-        DICT_16M                   // Dictionnary size (nb entries)
+        BATCH_500KB,               // Batch size
+        DICT_16K                   // Dictionnary size (nb entries)
     );
     printf("LogInit status : %d %s\n", rtn, rtn == 0 ? "OK" : rtn == 17 ? "WARN" : "FAILED");
     if (rtn != 0) return 0;
