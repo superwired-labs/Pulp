@@ -85,9 +85,9 @@ extern "C" {
 *  DICT_512K    524 288				~295 MB						 16 MB 
 *  DICT_1M    1 048 576				~590 MB						 32 MB 
 *  DICT_2M    2 097 152				~1.2 GB						 64 MB 
-*  DICT_4M    4 194 304				~2.4 GB						128 MB 
-*  DICT_8M    8 388 608				~4.7 GB						256 MB 
-*  DICT_16M  16 777 216				~9.4 GB						512 MB 
+*  DICT_4M    4 194 304				~2.4 GB						128 MB  ---------------->
+*  DICT_8M    8 388 608				~4.7 GB						256 MB   EXPERIMENTAL, LZ4 MAX = 2GB or about 1.3 million dictionary entries. But the calculation should account for the batch size also. Use at your own risks or replace the compressor.
+*  DICT_16M  16 777 216				~9.4 GB						512 MB  <---------------- 
 *
 *  Memory formula :  slots × 563 bytes × nb_threads
 * 
@@ -229,7 +229,7 @@ DLL_API uint8_t PulpInit(
 	uint8_t enable_seq,             // Enable (1) or disable (0) atomic (inter-thread) log numbering.
 	Anon_lvl ip_anon_lvl,           // IP anonymisation level (each level is a byte/hextet of IPv4/6). Use ANON_IP_NONE if non-IP endpoints are recorded.
 	uint8_t truncate_url_params,    // Strip params from URLS (1) or keep params (0). Use 0 if non-HTTP logs are logged.
-	uint16_t flush_per_file,        // Number of Batch per file before rotation (default 128), must be power of two. 
+	uint16_t flush_per_file,        // Number of Batch per file before rotation (default 512), must be power of two. 
 	Lz4CompressionLevel level,      // LZ4 Compression level (recommended COMPRESSION_BALANCED).
 	BatchSize buffer_size,          // Batch size, must use a BatchSize enum value (see the enum for more info).
 	DictSize dict_size);            // Dictionary size, must use a DictSize enum value (see the enum for more info).
@@ -243,7 +243,7 @@ DLL_API uint8_t PulpInit(
 *	             rtn_code_lo = Perf Info, active backoff activity (O == OK, 1 == light pressure, 2 == medium pressure, 3 == high pressure, 4 == log refused).
 *                              Refused logs can be sent again to the PULP instantly (usually a saturation problem that the PULP will solve in a
 *                              few milliseconds).
-* ENDPOINT : The value is limited to 95 chars.
+* ENDPOINT : The value is limited to 79 chars. Must be null-terminated.
 * 
 * The field semantic is indicative. Note that both "resource" and "endpoint" are cached and used to populate a dictionary.
 * It means they are best suited for repetitive patterns (GUID, TS, etc.. should be assigned to other fields if possible).
@@ -258,7 +258,7 @@ DLL_API uint16_t PulpWrite(
 	const char* resource,        // Generic resource reference (URL, domain name, ICMP message, etc.), cached and truncated if longer than 563 bytes (prefix + suffix + ellipsis).
 	uint32_t resource_len,       // Length of the resource string
 	uint32_t status_code,        // Generic response or error code (HTTP status, DNS RCODE, ICMP code/type, etc.)
-	const char* endpoint,        // Target address (IPv4/IPv6, hostname, DNS server, etc.). Do NOT try IP_ANON on non-IP endpoints, cached and truncated if longer than 95 bytes.
+	const char* endpoint,        // Target address (IPv4/IPv6, hostname, DNS server, etc.). Do NOT try IP_ANON on non-IP endpoints, cached and truncated if longer than 79 bytes.
 	uint32_t endpoint_len,       // Length of the endpoint string
 	uint16_t duration_ms,        // Duration in milliseconds (0–65535), user defined, no semantic meaning in the PULP.
 	uint16_t data_size_bucket,   // Data size bucket (0 = 1–5 KB, 1 = 5–10 KB, etc.), user defined, no semantic meaning in the PULP.
@@ -269,8 +269,8 @@ DLL_API uint16_t PulpWrite(
 /* PulpGetStats() retrieve live STATS from the PULP in JSON format.
 *  The returned buffer must be freed after use (at shutdown).
 *  In case the caller can't call native memory management function (free()), a PulpFreeStat(char*) function is provided.
-*  PulpGetStats() is not thread safe and may cause performance issues if called too often (every few seconds is fine).
-*  Must be called in a single thread, and not in the hot path (PulpWrite()) as it will block the PULP execution for a few milliseconds.
+*  PulpGetStats() is not thread safe and may cause performance issues if called too often (every few seconds is fine. The functions takes about 2 seconds to sample de data and return).
+*  Must be called in a separate dedictated single thread, and not in the hot path (PulpWrite() pool).
 *  Since the stat values are read during the PULP execution, values can change during the reading, resulting in small discrepencies
 *  (i.e numbers and % might not perfectly match).
 *  Information returned (exemple values) :

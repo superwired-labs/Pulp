@@ -126,7 +126,7 @@ typedef struct __declspec(align(64)) {
 	uint16_t value_len;
 	uint8_t used_in_shard;
 	char padding[1];                            // alignment on 8 bytes for value
-	char value[MAX_URL_LEN + 1];                // +1 for '\0', total 320 bytes (5 cache lines)
+	char value[MAX_URL_LEN + 1];                // +1 for '\0'
 } CacheEntryURL;
 
 typedef struct __declspec(align(32)) {
@@ -188,8 +188,8 @@ typedef struct {
 	HANDLE* threads;                         // Writer threads
 	HANDLE writetask_semaphore;              // Synchronization
 	__declspec(align(64)) LONG running;      // Pool state
-	__declspec(align(64)) LONG head;
-	__declspec(align(64)) LONG tail;
+	__declspec(align(64)) volatile LONG head;
+	__declspec(align(64)) volatile LONG tail;
 	uint32_t queue_size;                     // Actual size
 	uint32_t threads_count;                  // Number of threads
 } WritePool;
@@ -256,7 +256,7 @@ extern char* GetShardPath(LONG64 file_num);
 extern HANDLE CreateErrorFile(char* errorpath);
 extern void WriteError(HANDLE herror, char* msg);
 extern void WritePool_Shutdown();
-extern void WritePool_Init();
+extern BOOL WritePool_Init();
 extern void InitGlobalConfig();
 extern void WritePool_Enqueue(WriteTask task);
 extern uint8_t PulpFlush(void* ctx_override);

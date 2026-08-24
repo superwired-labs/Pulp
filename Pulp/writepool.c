@@ -381,7 +381,7 @@ static DWORD WINAPI RotationThread(LPVOID param) {
 	return 0;
 }
 
-void WritePool_Init() {
+BOOL WritePool_Init() {
 	// Allocation of arrays
 	global_write_pool.tasks = (WriteTask*)malloc(g_write_queue_size * sizeof(WriteTask));
 	global_write_pool.threads = (HANDLE*)malloc(g_write_pool_thread_count * sizeof(HANDLE));
@@ -395,14 +395,8 @@ void WritePool_Init() {
 			g_write_pool_thread_count * sizeof(HANDLE), 
 			g_max_rotation_queue * sizeof(WriteTask));
 		WriteError(herror, msg);
-		return;
+		return FALSE;
 	}
-
-	InitializeCriticalSection(&global_write_pool.queuelock);
-	InitializeCriticalSection(&global_write_pool.rotationlock);
-	InitializeCriticalSection(&global_write_pool.filelock);
-	InitializeCriticalSection(&global_write_pool.errorlock);
-	InitializeCriticalSection(&global_write_pool.pathswap);
 
 	global_write_pool.writetask_semaphore = CreateSemaphore(NULL, 0, g_write_queue_size, NULL);
 	file_rotation_semaphore = CreateSemaphore(NULL, 0, g_max_rotation_queue, NULL);
@@ -410,7 +404,7 @@ void WritePool_Init() {
 		char msg[256];
 		snprintf(msg, sizeof(msg), "WPIERROR => file %d / %lu\n", __LINE__, GetLastError());
 		WriteError(herror, msg);
-		return;
+		return FALSE;
 	}
 
 	global_write_pool.head = 0;
@@ -422,7 +416,7 @@ void WritePool_Init() {
 		char msg[256];
 		snprintf(msg, sizeof(msg), "WPIERROR => malloc %d / %llu\n", __LINE__, g_max_pending_handles * sizeof(HANDLE));
 		WriteError(herror, msg);
-		return;
+		return FALSE;
 	}
 	rotation_index = 0;
 	memset(rotation_queue, 0, sizeof(WriteTask) * g_max_rotation_queue);
@@ -430,15 +424,35 @@ void WritePool_Init() {
 
 	LOG_DEBUG("WritePool Init begin");
 	global_write_pool.running = TRUE;
+	rotation_thread = CreateThread(
+		NULL, 0, (LPTHREAD_START_ROUTINE)RotationThread, rotation_queue, 0, NULL);
 	for (uint32_t i = 0; i < g_write_pool_thread_count; i++) {
 		global_write_pool.threads[i] = CreateThread(
 			NULL, 0, (LPTHREAD_START_ROUTINE)WriteThread, NULL, 0, NULL
 		);
+		if (global_write_pool.threads[i] == NULL || rotation_thread == NULL) {
+			// Rollback
+			for (uint32_t j = 0; j < i; j++) {
+				CloseHandle(global_write_pool.threads[j]);
+			}
+			if(global_write_pool.tasks)
+				free(global_write_pool.tasks);
+			if(global_write_pool.threads)
+				free(global_write_pool.threads);
+			if(rotation_queue)
+				free(rotation_queue);
+			if (rotation_thread)
+				CloseHandle(rotation_thread);
+			if(global_write_pool.writetask_semaphore)
+				CloseHandle(global_write_pool.writetask_semaphore);
+			if(file_rotation_semaphore)
+				CloseHandle(file_rotation_semaphore);
+			return FALSE;
+		}
 	}
-	rotation_thread = CreateThread(
-		NULL, 0, (LPTHREAD_START_ROUTINE)RotationThread, rotation_queue, 0, NULL
-	);
+
 	LOG_DEBUG("WritePool Init end");
+	return TRUE;
 }
 
 void WritePool_Shutdown() {

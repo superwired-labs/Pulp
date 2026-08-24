@@ -82,9 +82,9 @@ uint8_t global_compression_level = COMPRESSION_LEVEL_DEFAULT;
 
 // One‐time initialization guard
 static INIT_ONCE g_loggerInitOnce = INIT_ONCE_STATIC_INIT;
-// Compression callback
-static TP_CALLBACK_ENVIRON g_envCompress;
-static PTP_POOL g_threadPool = NULL;
+// Compression callbacks
+TP_CALLBACK_ENVIRON g_envCompress;
+PTP_POOL g_threadPool = NULL;
 // Environement variable
 uint32_t g_write_pool_thread_count = 0;
 uint32_t g_max_pending_handles = 0;
@@ -98,7 +98,9 @@ void InitGlobalConfig() {
 	g_write_pool_thread_count = GetActiveProcessorCount(ALL_PROCESSOR_GROUPS);
 	if (g_write_pool_thread_count == 0)
 		g_write_pool_thread_count = 6;
-	g_max_pending_handles = g_write_pool_thread_count * 12;
+	g_max_pending_handles = 1;
+	while (g_max_pending_handles < g_write_pool_thread_count * 12)
+		g_max_pending_handles <<= 1;
 	g_max_rotation_queue = g_write_pool_thread_count * 24;
 	// Powers of 2
 	g_write_queue_size = 1;
@@ -139,9 +141,12 @@ static inline int Log2_64(uint64_t x) {
 
 static inline const char* StripBrackets(const char* s, size_t* len)
 {
-	if (*len >= 2 && s[0] == '[' && s[*len - 1] == ']') {
-		*len -= 2;
-		return s + 1;               /* pass the '[' character */
+	if (*len >= 2 && s[0] == '[') {
+		const char* close = (const char*)memchr(s + 1, ']', *len - 1);
+		if (close) {
+			*len = (size_t)(close - s) - 1;
+			return s + 1;
+		}
 	}
 	return s;
 }
@@ -155,7 +160,7 @@ static inline const char* StripBrackets(const char* s, size_t* len)
   *   1 = IPv6 (or IPv6 + port / compressed / zone-ID)
   *  -1 = Invalid / non-IP / Domain name
   * --------------------------------------------------------------------------- */
-static inline int ClassifyIpFast(const char* s, size_t n)
+static inline int8_t ClassifyIpFast(const char* s, size_t n)
 {
 	s = StripBrackets(s, &n);
 	if (n == 0 || n > 80)
@@ -272,26 +277,20 @@ static inline int ClassifyIpFast(const char* s, size_t n)
  *  @hw:     Scalar implementation.
  * --------------------------------------------------------------------------- */
 
-static inline char* AnonIp(const char* ip, int ip_anon_lvl, uint8_t isIpv6, ThreadContext* ctx)
+static inline char* AnonIp(const char* ip, int ip_mask_lvl, uint8_t isIpv6, ThreadContext* ctx)
 {
 	char* dst = ctx->ipdest;
 
-	/* ---------- IPv4 (scalar, fast) ----------
-	 Loop until the first suffix delimiter character:
-	*   ':' = port (e.g., 192.168.1.1:8080)
-	*   '/' = CIDR (e.g., 192.168.1.1/24)
-	*   '%' = zone ID (e.g., 192.168.1.1%eth0) — rare in IPv4 but tolerated
-	*   '[' / ']' = IPv6 bracket (unexpected in IPv4, but for safety)
-	*
-	* Condition 'ip[len]' also checks the NUL terminator (safety)
-	*/
+	/* ---------- IPv4 (scalar, fast) ---------- */
 	if (!isIpv6) {
-		size_t len = 0;
+		uint8_t has_bracket = (ip[0] == '[');
+		size_t start_off = has_bracket ? 1 : 0;
+		size_t len = start_off;
+
 		while (ip[len] &&
 			ip[len] != ':' &&
 			ip[len] != '/' &&
 			ip[len] != '%' &&
-			ip[len] != '[' &&
 			ip[len] != ']') {
 			++len;
 		}
@@ -300,11 +299,11 @@ static inline char* AnonIp(const char* ip, int ip_anon_lvl, uint8_t isIpv6, Thre
 		memcpy(dst, ip, len);
 		dst[len] = '\0';
 
-		int bytes_to_mask = ip_anon_lvl;
+		int bytes_to_mask = ip_mask_lvl;
 		if (bytes_to_mask < 0) bytes_to_mask = 0;
 		if (bytes_to_mask > 4) bytes_to_mask = 4;
 
-		/* If nothing to mask, copy suffix and exit (never there, redundant security) */
+		/* If nothing to mask, copy suffix and exit */
 		if (bytes_to_mask == 0) {
 			size_t suffix_len = strlen(ip + len);
 			if (len + suffix_len >= sizeof(ctx->ipdest))
@@ -313,22 +312,12 @@ static inline char* AnonIp(const char* ip, int ip_anon_lvl, uint8_t isIpv6, Thre
 			return dst;
 		}
 
-
-		/* --- Calculate where to start masking (mask_start) ---
-		* Example: IP "192.168.1.42", bytes_to_mask = 2 (ANON_IP_2)
-		*   Goal: keep 4-2=2 bytes visible → "192.168.x.x"
-		*   Strategy: skip the first 2 bytes (up to the 2nd dot)
-		*   mask_start = position of the 3rd byte (after the 2nd '.')
-		*
-		* Special case ANON_IP_4 : target=0 → mask_start=0 (mask everything)
-		*/
-
 		int dot_count = 0;
-		size_t mask_start = 0;
+		size_t mask_start = start_off;
 		int target = 4 - bytes_to_mask;
 
-		/* Find mask_start, then BREAK */
-		for (size_t i = 0; i < len; ++i) {
+		/* Find mask_start starting after optional '[' */
+		for (size_t i = start_off; i < len; ++i) {
 			if (ip[i] == '.') {
 				dot_count++;
 				if (dot_count == target) {
@@ -337,8 +326,9 @@ static inline char* AnonIp(const char* ip, int ip_anon_lvl, uint8_t isIpv6, Thre
 				}
 			}
 		}
-		/*  ANON_IP_4 : mask everything */
-		if (target == 0) mask_start = 0;  
+
+		/* ANON_IP_4 : mask everything after optional '[' */
+		if (target == 0) mask_start = start_off;
 
 		/* Apply the mask */
 		for (size_t i = mask_start; i < len; ++i) {
@@ -356,39 +346,27 @@ static inline char* AnonIp(const char* ip, int ip_anon_lvl, uint8_t isIpv6, Thre
 	/* ---------- IPv6 ---------- */
 
 	const size_t max_addr_len = 80;
-	size_t src_len = 0;
+	uint8_t has_bracket = (ip[0] == '[');
+	size_t src_len = has_bracket ? 1 : 0;
 	size_t addr_end = 0;
-
-	/* --- Collect hextet offsets for :: expansion ---
-	* Sep_off[] stores the START positions of each hextet.
-	* Ex: "2001:0db8:85a3::8a2e:0370:7334"
-	*     sep_off[0]=0 ('2'), sep_off[1]=':', sep_off[2]='8', etc.
-	*
-	* Max size 17 = 8 hextets + 7 separators (:) + 1 start = 16, margin 17.
-	*/
 
 	size_t sep_off[17];
 	int sep_cnt = 0;
 	int double_colon_idx = -1;
 	int seen_double_colon = 0;
 
-	sep_off[sep_cnt++] = 0;
+	sep_off[sep_cnt++] = src_len;
 
-
-	/* --- Scan the IPv6 string ---
-	 * Goal: determine 'addr_end' (end of the address, before suffix)
-	 * and build 'sep_off' for later :: expansion.
-	 */
-
+	/* --- Scan the IPv6 string --- */
 	while (ip[src_len] != '\0') {
 		char c = ip[src_len];
 
-		if (c == '[' || c == ']' || c == '/' || c == '%') {
+		if (c == ']' || c == '/' || c == '%') {
 			addr_end = src_len;
 			break;
 		}
 		else if (c == ':') {
-			if (src_len > 0 && ip[src_len - 1] == ':') {
+			if (src_len > (has_bracket ? 1 : 0) && ip[src_len - 1] == ':') {
 				if (seen_double_colon) return NULL;
 				seen_double_colon = 1;
 				double_colon_idx = sep_cnt - 1;
@@ -408,35 +386,26 @@ static inline char* AnonIp(const char* ip, int ip_anon_lvl, uint8_t isIpv6, Thre
 	if (addr_end == 0) addr_end = src_len;
 	if (addr_end > max_addr_len) addr_end = max_addr_len;
 
-	/* ---  Expansion of '::' (compression IPv6) ---
-	 *  IPv6 requires 8 hextets. '::' represents the missing zeros.
-	 *
-	 * Ex: "2001:db8::1" → 3 explicit hextets + :: + 1 hextet = 4 hextets
-	 *   Missing hextets = 8 - 4 = 4 hextets of zeros to insert.
-	 *
-	 * Method: shift sep_off[] after '::' and insert the virtual offsets.
-	 */
-
+	/* --- Expansion of '::' (compression IPv6) --- */
 	if (seen_double_colon) {
-		int explicit_hextets = sep_cnt;
+		
+		int explicit_hextets = sep_cnt - 1;
 		int missing_hextets = 8 - explicit_hextets;
 		if (missing_hextets < 0) return NULL;
 
-		/* Phase 1 : shift the hextets AFTER '::' to the right */
 		if (missing_hextets > 0) {
 			for (int i = sep_cnt - 1; i > double_colon_idx; --i)
-				sep_off[i + missing_hextets] = sep_off[i];
+				sep_off[i + missing_hextets - 1] = sep_off[i];
 
-			/* Phase 2 : insert the virtual offsets of the missing hextets */
 			for (int i = 0; i < missing_hextets; ++i)
-				sep_off[double_colon_idx + i + 1] = sep_off[double_colon_idx] + i + 1;
+				sep_off[double_colon_idx + i] = sep_off[double_colon_idx];
 
-			sep_cnt += missing_hextets;
+			sep_cnt += (missing_hextets - 1);
 		}
 	}
 
 	int max_units = 8;
-	int units_to_mask = ip_anon_lvl * 2;
+	int units_to_mask = ip_mask_lvl * 2;
 	if (units_to_mask < 0) units_to_mask = 0;
 	if (units_to_mask > max_units) units_to_mask = max_units;
 	if (units_to_mask > sep_cnt) units_to_mask = sep_cnt;
@@ -474,9 +443,9 @@ static inline char* AnonIp(const char* ip, int ip_anon_lvl, uint8_t isIpv6, Thre
 inline static uint64_t FastSeed(const char* url, size_t len) {
 	uint64_t seed = len;
 	if (len > 8) {
-		seed |= (uint64_t)url[0] << 8;
-		seed |= (uint64_t)url[len / 2] << 16;
-		seed |= (uint64_t)url[len - 1] << 24;
+		seed |= (uint64_t)(unsigned char)url[0] << 8;
+		seed |= (uint64_t)(unsigned char)url[len / 2] << 16;
+		seed |= (uint64_t)(unsigned char)url[len - 1] << 24;
 
 		uint32_t mid_word;
 		memcpy(&mid_word, url + len / 2 - 2, sizeof(mid_word));
@@ -544,7 +513,7 @@ uint64_t CacheAddOrGet(
 		// 1. Try the primary bucket with CityHash64 + quick probe if necessary
 		size_t i;
 		for (i = 0; i < PROBE_RANGE_PRIMARY; i++) {
-			uint32_t idx = (bucket + i) & (size - 1);  // Simple linear probing
+			uint32_t idx = (uint32_t)(bucket + i) & (size - 1);  // Simple linear probing
 			CacheEntryURL* entry = &cacheURL[idx];
 
 			// 1a. Empty slot → Direct insertion
@@ -579,7 +548,7 @@ uint64_t CacheAddOrGet(
 		bucket = GetBucketFromHash(hash2, k) & (size - 1);
 
 		for (i = 1; i <= PROBE_RANGE_SECONDARY; ++i) {
-			uint32_t probe_idx = (bucket + i * 13) & (size - 1);
+			uint32_t probe_idx = (uint32_t)(bucket + i * 13) & (size - 1);
 			CacheEntryURL* probe = &cacheURL[probe_idx];
 
 			// LOG_TRACE("PROBING...");
@@ -613,7 +582,7 @@ uint64_t CacheAddOrGet(
 		bucket = GetBucketFromHash(hash3, k) & (size - 1);
 
 		for (i = 1; i <= PROBE_RANGE_TERTIARY; ++i) {
-			uint32_t probe_idx = (bucket + i * 17) & (size - 1);
+			uint32_t probe_idx = (uint32_t)(bucket + i * 17) & (size - 1);
 			CacheEntryURL* probe = &cacheURL[probe_idx];
 
 			// LOG_TRACE("PROBING...");
@@ -652,13 +621,13 @@ uint64_t CacheAddOrGet(
 				cacheURL[i].hash = hash3;
 				cacheURL[i].used_in_shard = 1;
 				cacheURL[i].value_len = local_url_len;
-				rtn_URL = i;
+				rtn_URL = (uint32_t)i;
 				goto IP;
 			}
 			else if (cacheURL[i].hash == hash3 && cacheURL[i].value[0] == key[0] && cacheURL[i].value[local_url_len >> 1] == key[local_url_len >> 1]
 				&& cacheURL[i].value_len == local_url_len && memcmp(cacheURL[i].value, key, local_url_len) == 0) {
 				cacheURL[i].used_in_shard = 1;
-				rtn_URL = i;
+				rtn_URL = (uint32_t)i;
 				goto IP;
 			}
 			STATS_INC64(url_cache_probes_total);
@@ -691,7 +660,7 @@ IP :
 		size_t i;
 		for (i = 0; i < PROBE_RANGE_PRIMARY; i++)
 		{
-			uint32_t idx = (bucket + i) & (size - 1);  // Simple linear probing
+			uint32_t idx = (uint32_t)(bucket + i) & (size - 1);  // Simple linear probing
 			CacheEntryIPV6* entry = &cacheIP[idx];
 
 			// 1a. Empty slot → Direct insertion
@@ -724,7 +693,7 @@ IP :
 		bucket = GetBucketFromHash(hash2, k) & (size - 1);
 
 		for (i = 1; i <= PROBE_RANGE_SECONDARY; ++i) {
-			uint32_t probe_idx = (bucket + i * 13) & (size - 1);
+			uint32_t probe_idx = (uint32_t)(bucket + i * 13) & (size - 1);
 			CacheEntryIPV6* probe = &cacheIP[probe_idx];
 
 			// LOG_TRACE("PROBING...");
@@ -757,7 +726,7 @@ IP :
 		bucket = GetBucketFromHash(hash3, k) & (size - 1);
 
 		for (i = 1; i <= PROBE_RANGE_TERTIARY; ++i) {
-			uint32_t probe_idx = (bucket + i * 17) & (size - 1);
+			uint32_t probe_idx = (uint32_t)(bucket + i * 17) & (size - 1);
 			CacheEntryIPV6* probe = &cacheIP[probe_idx];
 
 			// LOG_TRACE("PROBING...");
@@ -1072,6 +1041,7 @@ FREE:
 		if (ctx->active_buffer)  _aligned_free(ctx->active_buffer);
 		if (ctx->url_cache)      _aligned_free(ctx->url_cache);
 		if (ctx->ipv6_cache)     _aligned_free(ctx->ipv6_cache);
+		if (tls_index != TLS_OUT_OF_INDEXES) TlsSetValue(tls_index, NULL);
 		DeleteCriticalSection(&ctx->compression_cs);
 		_aligned_free(ctx);
 	}
@@ -1085,6 +1055,12 @@ BOOL CALLBACK InitializeOnce(PINIT_ONCE initOnce, PVOID parameter, LPVOID* rtnct
 
 	UNREFERENCED_PARAMETER(initOnce);
 	UNREFERENCED_PARAMETER(rtnctx);
+
+	InitializeCriticalSection(&global_write_pool.queuelock);
+	InitializeCriticalSection(&global_write_pool.rotationlock);
+	InitializeCriticalSection(&global_write_pool.filelock);
+	InitializeCriticalSection(&global_write_pool.errorlock);
+	InitializeCriticalSection(&global_write_pool.pathswap);
 
 	_LogInitParams const* pInit = (_LogInitParams*)parameter;
 
@@ -1100,6 +1076,7 @@ BOOL CALLBACK InitializeOnce(PINIT_ONCE initOnce, PVOID parameter, LPVOID* rtnct
 	strcpy_s(pathes[2], MAX_PATH, backup_path);
 
 	for (int i = 0; i < _countof(pathes); i++) {
+		if (pathes[i][0] == '\0') continue;  // Skip empty/optional paths
 		HRESULT hr = SHCreateDirectoryExA(NULL, pathes[i], NULL);
 		if (hr != ERROR_SUCCESS && hr != ERROR_ALREADY_EXISTS) {
 			// As a last resort if the directory does not exist
@@ -1175,7 +1152,8 @@ BOOL CALLBACK InitializeOnce(PINIT_ONCE initOnce, PVOID parameter, LPVOID* rtnct
 	g_log2_64 = Log2_64(g_cache_size);
 
 	// 8. Initialize asynchronous pools (Writing and Compression)
-	WritePool_Init();
+	if (!WritePool_Init())
+		return FALSE;
 
 	g_threadPool = CreateThreadpool(NULL);
 	if (!g_threadPool) {
@@ -1221,7 +1199,8 @@ uint8_t PulpInit(const char* log_path, const char* backup_log_path, const char* 
 		return RTN_INIT_FAIL_MISSING_PARAM;
 
 	// 2. Path normalization and secondary parameters
-	if (err_path == NULL)        err_path = "error";
+	if (err_path == NULL || err_path[0] == '\0')        
+		err_path = "error";
 	if (backup_log_path == NULL) backup_log_path = "";
 
 	if (strlen(log_path) > MAX_PATH || strlen(err_path) > MAX_PATH || strlen(backup_log_path) > MAX_PATH)
@@ -1413,7 +1392,13 @@ uint16_t PulpWrite(
 	if (ip_anon_lvl != ANON_IP_NONE && ip && ip_len > 0) {
 		int8_t isipv6 = ClassifyIpFast(ip, ip_len);
 		if (isipv6 >= 0) {
-			AnonIp(ip, ip_anon_lvl, isipv6, ctx);
+			char* result = AnonIp(ip, ip_anon_lvl, isipv6, ctx);
+			if (!result) {
+				// Fallback : flat copy - Defensive fallback for edge cases
+				uint32_t copy_len = (ip_len < MAX_IPV6_LEN) ? ip_len : MAX_IPV6_LEN;
+				memcpy(ctx->ipdest, ip, copy_len);
+				ctx->ipdest[copy_len] = '\0';
+			}
 		}
 		else {
 			// Fallback if the IP is malformed/unrecognized: secure raw copy
@@ -1884,7 +1869,11 @@ uint8_t PulpFlush(void* ctx_override) {
 	PTP_WORK work = CreateThreadpoolWork(CompressionTask, ctx, &g_envCompress);
 	if (work == NULL) {
 		ctx->pending_size = 0;
-		InterlockedDecrement(&ctx->pending_compression);
+		if (InterlockedDecrement(&ctx->pending_compression) == 0) {
+			EnterCriticalSection(&ctx->compression_cs);
+			WakeAllConditionVariable(&ctx->pc_complete);
+			LeaveCriticalSection(&ctx->compression_cs);
+		}
 		ctx->active_count = 0; // Mandatory release of the active buffer
 		STATS_INC64(compression_failure_total);
 		return RTN_INTERNAL_FAILURE_4;
@@ -1902,6 +1891,12 @@ uint8_t PulpFlush(void* ctx_override) {
 
 void PulpShutdown(void) {
 	LOG_DEBUG("LogShutdown begin");
+
+	// If init failed and no TLS
+	if (tls_index == TLS_OUT_OF_INDEXES) {
+		return;
+	}
+
 	// 0) Atomically detach the global list
 	//    retrieve the head and set global_context_list to NULL
 	EnterCriticalSection(&context_list_lock);
@@ -2045,6 +2040,10 @@ void PulpShutdown(void) {
 		// 4.4) Free the list node
 		free(node);
 		node = next;
+	}
+	if (herror != INVALID_HANDLE_VALUE) {
+		CloseHandle(herror);
+		herror = INVALID_HANDLE_VALUE;
 	}
 
 	// 5) Free the TLS
