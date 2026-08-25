@@ -268,33 +268,33 @@ DLL_API uint16_t PulpWrite(
 
 /* PulpGetStats() retrieve live STATS from the PULP in JSON format.
 *  The returned buffer must be freed after use (at shutdown).
-*  In case the caller can't call native memory management function (free()), a PulpFreeStat(char*) function is provided.
+*  In case the caller can't call native memory management function (free()), a PulpFreeStats(char*) function is provided.
 *  PulpGetStats() is not thread safe and may cause performance issues if called too often (every few seconds is fine. The functions takes about 2 seconds to sample de data and return).
 *  Must be called in a separate dedictated single thread, and not in the hot path (PulpWrite() pool).
 *  Since the stat values are read during the PULP execution, values can change during the reading, resulting in small discrepencies
 *  (i.e numbers and % might not perfectly match).
 *  Information returned (exemple values) :
 *   {
-*    cache_url_L1 : 499999                 // number of URLS managed at L1
-*    cache_url_L1 % : 100.00               // % of the URL total
-*    cache_url_L2 : 1                      // number of URLS managed at L2
-*    cache_url_L2 % : 0.00                 //  % of the URL total
-*    cache_url_L3 : 0					   // number of URLS managed at L3
-*    cache_url_L3 % : 0.00                 //  % of the URL total
-*    cache_ip_L1 : 500000                  //  number of IPS managed at L1
-*    cache_ip_L1 % : 100.00                //  % of the IP total
-*    cache_ip_L2 : 0                       //  number of IPS managed at L2
-*    cache_ip_L2 % : 0.00                  //  % of the IP total
-*    cache_ip_L3 : 0                       //  number of IPS managed at L3
-*    cache_ip_L3 % : 0.00                  //  % of the IP total
-*    url_cache_probes_total : 234116       // number of probes performed for URLS
-*    ip_cache_probes_total : 55860         // number of probes performed for IPS
-*    url_insert_to_step_ratio : 2.14       // number of insert / number of probes (higher is better) for URLS
-*    ip_insert_to_step_ratio : 8.95        // number of insert / number of probes (higher is better) for IPS
-*    url_probes_depth_max : 32             // max probe depth recorded for URLS
-*    ip_probes_depth_max : 0               // max probe depth recorded for URLS
-*    url_fullprobescan_total : 0           // number of full-scan for URLS (can happen, not often. Check if throughput is still acceptable)
-*    ip_fullprobescan_total : 0            // number of full-scan for IPS (can happen, not often. Check if throughput is still acceptable)
+*    cache_hit_resource_L1 : 499999                 // number of URLS managed at L1
+*    cache_hit_resource_L1_% : 100.00               // % of the URL total
+*    cache_hit_resource_L2 : 1                      // number of URLS managed at L2
+*    cache_hit_resource_L2_% : 0.00                 //  % of the URL total
+*    cache_hit_resource_L3 : 0					   // number of URLS managed at L3
+*    cache_hit_resource_L3_% : 0.00                 //  % of the URL total
+*    cache_hit_endpoint_L1 : 500000                  //  number of IPS managed at L1
+*    cache_hit_endpoint_L1_% : 100.00                //  % of the IP total
+*    cache_hit_endpoint_L2 : 0                       //  number of IPS managed at L2
+*    cache_hit_endpoint_L2_% : 0.00                  //  % of the IP total
+*    cache_hit_endpoint_L3 : 0                       //  number of IPS managed at L3
+*    cache_hit_endpoint_L3_% : 0.00                  //  % of the IP total
+*    resource_cache_probes_total : 234116       // number of probes performed for URLS
+*    endpoint_cache_probes_total : 55860         // number of probes performed for IPS
+*    resource_cache_insert_to_step_ratio : 2.14       // number of insert / number of probes (higher is better) for URLS
+*    endpoint_cache_insert_to_step_ratio : 8.95        // number of insert / number of probes (higher is better) for IPS
+*    resource_cache_probes_depth_max : 32             // max probe depth recorded for URLS
+*    endpoint_cache_probes_depth_max : 0               // max probe depth recorded for URLS
+*    resource_cache_fullprobescan_total : 0           // number of full-scan for URLS (can happen, not often. Check if throughput is still acceptable)
+*    endpoint_cache_fullprobescan_total : 0            // number of full-scan for IPS (can happen, not often. Check if throughput is still acceptable)
 *    log_processed_total : 500000          // total logs processed
 *    batch_flushed_total : 32              // total batch processed
 *    batch_compressed_total : 32           // total compression processed  

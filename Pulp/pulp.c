@@ -478,7 +478,7 @@ static inline uint32_t GetBucketFromHash(uint64_t hash, uint32_t k){
  *   cacheURL, cacheIP : Pointers to thread-local cache arrays (size MUST be power of 2)
  *   size              : Number of entries in cache arrays
  *   url_param, ip_param: Key string buffers
- *   url_len, ip_len   : Length of key buffers in bytes
+ *   resource_len, endpoint_len   : Length of key buffers in bytes
  *   k                 : Bucket scaling shift parameter
  *
  * Return:
@@ -1320,11 +1320,11 @@ INITIALIZE:
  *============================================================================*/
 uint16_t PulpWrite(
 	uint8_t operation_id,
-	const char* url, uint32_t url_len,
-	uint32_t http_code,
-	const char* ip, uint32_t ip_len,
+	const char* resource, uint32_t resource_len,
+	uint32_t status_code,
+	const char* endpoint, uint32_t endpoint_len,
 	uint16_t duration_ms,
-	uint16_t response_size,
+	uint16_t data_size_bucket,
 	uint8_t flags,
 	uint64_t timestamp)
 {
@@ -1338,14 +1338,14 @@ uint16_t PulpWrite(
 	// -------------------------------------------------------------------------
 	// 1. Sanitize & Prepare URL
 	// -------------------------------------------------------------------------
-	if (url && url_len > 0) {
-		const char* src = url;
-		uint32_t src_len = url_len;
+	if (resource && resource_len > 0) {
+		const char* src = resource;
+		uint32_t src_len = resource_len;
 
 		if (truncate_url_params) {
-			const char* q = (const char*)memchr(url, '?', url_len);
+			const char* q = (const char*)memchr(resource, '?', resource_len);
 			if (q) {
-				src_len = (uint32_t)(q - url + 1);
+				src_len = (uint32_t)(q - resource + 1);
 			}
 		}
 
@@ -1389,22 +1389,22 @@ uint16_t PulpWrite(
 	// -------------------------------------------------------------------------
 	uint64_t seq = enable_sequence ? (uint64_t)InterlockedIncrement64(&global_sequence) : 0;
 
-	if (ip_anon_lvl != ANON_IP_NONE && ip && ip_len > 0) {
-		int8_t isipv6 = ClassifyIpFast(ip, ip_len);
+	if (ip_anon_lvl != ANON_IP_NONE && endpoint && endpoint_len > 0) {
+		int8_t isipv6 = ClassifyIpFast(endpoint, endpoint_len);
 		if (isipv6 >= 0) {
-			char* result = AnonIp(ip, ip_anon_lvl, isipv6, ctx);
+			char* result = AnonIp(endpoint, ip_anon_lvl, isipv6, ctx);
 			if (!result) {
 				// Fallback : flat copy - Defensive fallback for edge cases
-				uint32_t copy_len = (ip_len < MAX_IPV6_LEN) ? ip_len : MAX_IPV6_LEN;
-				memcpy(ctx->ipdest, ip, copy_len);
+				uint32_t copy_len = (endpoint_len < MAX_IPV6_LEN) ? endpoint_len : MAX_IPV6_LEN;
+				memcpy(ctx->ipdest, endpoint, copy_len);
 				ctx->ipdest[copy_len] = '\0';
 			}
 		}
 		else {
 			// Fallback if the IP is malformed/unrecognized: secure raw copy
-			if (ip && ip_len > 0) {
-				uint32_t copy_len = (ip_len < MAX_IPV6_LEN) ? ip_len : MAX_IPV6_LEN;
-				memcpy(ctx->ipdest, ip, copy_len);
+			if (endpoint && endpoint_len > 0) {
+				uint32_t copy_len = (endpoint_len < MAX_IPV6_LEN) ? endpoint_len : MAX_IPV6_LEN;
+				memcpy(ctx->ipdest, endpoint, copy_len);
 				ctx->ipdest[copy_len] = '\0';
 			}
 			else {
@@ -1414,9 +1414,9 @@ uint16_t PulpWrite(
 	}
 	else {
 		// Normal case: Secure bounded copy to prevent overflow with non-null-terminated strings
-		if (ip && ip_len > 0) {
-			uint32_t copy_len = (ip_len < MAX_IPV6_LEN) ? ip_len : MAX_IPV6_LEN;
-			memcpy(ctx->ipdest, ip, copy_len);
+		if (endpoint && endpoint_len > 0) {
+			uint32_t copy_len = (endpoint_len < MAX_IPV6_LEN) ? endpoint_len : MAX_IPV6_LEN;
+			memcpy(ctx->ipdest, endpoint, copy_len);
 			ctx->ipdest[copy_len] = '\0';
 		}
 		else {
@@ -1475,11 +1475,11 @@ RETRY:
 		entry->timestamp = timestamp;
 		entry->url_idx = url_idx;
 		entry->ip_idx = ip_idx;
-		entry->http_code = (uint16_t)http_code;
+		entry->http_code = (uint16_t)status_code;
 		entry->http_verb = operation_id;
 		entry->duration_ms = duration_ms;
 		entry->flags = flags;
-		entry->response_size = response_size;
+		entry->response_size = data_size_bucket;
 	}
 
 	// -------------------------------------------------------------------------
@@ -1755,7 +1755,7 @@ static BYTE* BuildDictionaryInMemory(ThreadContext* ctx, size_t* out_size) {
 
 		memcpy(p, ctx->url_cache[id].value, url_len);
 		p += url_len;
-		LOG_DEBUG("url len %d, url id %u", url_len, id);
+		LOG_DEBUG("resource len %d, resource id %u", url_len, id);
 	}
 
 	// Section IPs
@@ -1774,7 +1774,7 @@ static BYTE* BuildDictionaryInMemory(ThreadContext* ctx, size_t* out_size) {
 
 		memcpy(p, ctx->ipv6_cache[id].value, ip_len);
 		p += ip_len;
-		LOG_DEBUG("ip len %d, ip id %u", ip_len, id);
+		LOG_DEBUG("endpoint len %d, endpoint id %u", ip_len, id);
 	}
 
 	// Canary end
