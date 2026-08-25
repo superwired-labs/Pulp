@@ -301,7 +301,7 @@ All servers write to `\\nas\logs\`. A scheduled task on the central machine runs
 # Example PowerShell script, with json format and output filter extensions (not included in the sources, but easily implementable)
 Get-ChildItem \\nas\logs\ -Filter *.bin | ForEach-Object {
     PulpReader.exe --input $_.FullName --format json --filter "http_code>=400" |
-        Invoke-RestMethod -Uri "[https://api.datadog.com/v1/input](https://api.datadog.com/v1/input)" -Method Post
+        Invoke-RestMethod -Uri "https://api.datadog.com/v1/input" -Method Post
 }
 ```
 
@@ -309,7 +309,7 @@ Get-ChildItem \\nas\logs\ -Filter *.bin | ForEach-Object {
 
 ```cmd
 PulpReader.exe --input C:\Logs\shard_12345.bin --format json --filter "http_code>=500" |
-    curl -X POST [https://api.datadog.com/v1/input](https://api.datadog.com/v1/input) -H "Content-Type: application/json" -d @-
+    curl -X POST https://api.datadog.com/v1/input -H "Content-Type: application/json" -d @-
 ```
 
 ### 4. SIEM / cold storage decoding
