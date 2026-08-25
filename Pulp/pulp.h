@@ -279,35 +279,35 @@ DLL_API uint16_t PulpWrite(
 *    cache_hit_resource_L1_% : 100.00               // % of the URL total
 *    cache_hit_resource_L2 : 1                      // number of URLS managed at L2
 *    cache_hit_resource_L2_% : 0.00                 //  % of the URL total
-*    cache_hit_resource_L3 : 0					   // number of URLS managed at L3
+*    cache_hit_resource_L3 : 0					    // number of URLS managed at L3
 *    cache_hit_resource_L3_% : 0.00                 //  % of the URL total
-*    cache_hit_endpoint_L1 : 500000                  //  number of IPS managed at L1
-*    cache_hit_endpoint_L1_% : 100.00                //  % of the IP total
-*    cache_hit_endpoint_L2 : 0                       //  number of IPS managed at L2
-*    cache_hit_endpoint_L2_% : 0.00                  //  % of the IP total
-*    cache_hit_endpoint_L3 : 0                       //  number of IPS managed at L3
-*    cache_hit_endpoint_L3_% : 0.00                  //  % of the IP total
-*    resource_cache_probes_total : 234116       // number of probes performed for URLS
-*    endpoint_cache_probes_total : 55860         // number of probes performed for IPS
-*    resource_cache_insert_to_step_ratio : 2.14       // number of insert / number of probes (higher is better) for URLS
-*    endpoint_cache_insert_to_step_ratio : 8.95        // number of insert / number of probes (higher is better) for IPS
-*    resource_cache_probes_depth_max : 32             // max probe depth recorded for URLS
-*    endpoint_cache_probes_depth_max : 0               // max probe depth recorded for URLS
-*    resource_cache_fullprobescan_total : 0           // number of full-scan for URLS (can happen, not often. Check if throughput is still acceptable)
-*    endpoint_cache_fullprobescan_total : 0            // number of full-scan for IPS (can happen, not often. Check if throughput is still acceptable)
-*    log_processed_total : 500000          // total logs processed
-*    batch_flushed_total : 32              // total batch processed
-*    batch_compressed_total : 32           // total compression processed  
-*    batch_written_total : 32              // total batch written
-*    writer_waitfile_max : 0               // writer queue depth (lower is better)
-*    backpressure_count : 0                // number of backpressure activated
-*    compression_lz4_ratio_avg : 0.86      // LZ4 compression average on preprocessed data (the final compression ratio on disk is the result of the precompression ratio and the LZ4 ratio)
-*    compression_failure_total : 0         // number of LZ4 failures 
-*    lost_logs_total : 0                   // abandonned batches (check error file if that happen)
-*    log_rotation : 2                      // file rotation counter
-*    log_refused_total : 0                 // number of refused logs on PulpWrite call
-*    rotation_resync_total : 0             // number of resync on file creation (should happen rarely, if ever)
-*    throughput_million_logs/s: 6.55       // number of million of logs processed per second
+*    cache_hit_endpoint_L1 : 500000                 //  number of IPS managed at L1
+*    cache_hit_endpoint_L1_% : 100.00               //  % of the IP total
+*    cache_hit_endpoint_L2 : 0                      //  number of IPS managed at L2
+*    cache_hit_endpoint_L2_% : 0.00                 //  % of the IP total
+*    cache_hit_endpoint_L3 : 0                      //  number of IPS managed at L3
+*    cache_hit_endpoint_L3_% : 0.00                 //  % of the IP total
+*    resource_cache_probes_total : 234116           // number of probes performed for URLS
+*    endpoint_cache_probes_total : 55860            // number of probes performed for IPS
+*    resource_cache_insert_to_step_ratio : 2.14     // number of insert / number of probes (higher is better) for URLS
+*    endpoint_cache_insert_to_step_ratio : 8.95     // number of insert / number of probes (higher is better) for IPS
+*    resource_cache_probes_depth_max : 32           // max probe depth recorded for URLS
+*    endpoint_cache_probes_depth_max : 0            // max probe depth recorded for URLS
+*    resource_cache_fullprobescan_total : 0         // number of full-scan for URLS (can happen, not often. Check if throughput is still acceptable)
+*    endpoint_cache_fullprobescan_total : 0         // number of full-scan for IPS (can happen, not often. Check if throughput is still acceptable)
+*    log_processed_total : 500000                   // total logs processed
+*    batch_flushed_total : 32                       // total batch processed
+*    batch_compressed_total : 32                    // total compression processed  
+*    batch_written_total : 32                       // total batch written
+*    writer_waitfile_max : 0                        // writer queue depth (lower is better)
+*    backpressure_count : 0                         // number of backpressure activated
+*    compression_lz4_ratio_avg : 0.86               // LZ4 compression average on preprocessed data (the final compression ratio on disk is the result of the precompression ratio and the LZ4 ratio)
+*    compression_failure_total : 0                  // number of LZ4 failures 
+*    lost_logs_total : 0                            // abandonned batches (check error file if that happen)
+*    log_rotation : 2                               // file rotation counter
+*    log_refused_total : 0                          // number of refused logs on PulpWrite call
+*    rotation_resync_total : 0                      // number of resync on file creation (should happen rarely, if ever)
+*    throughput_million_logs/s: 6.55                // number of million of logs processed per second
 *   }
 */
 DLL_API char* PulpGetStats();
