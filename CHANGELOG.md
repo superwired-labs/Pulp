@@ -6,7 +6,7 @@ All notable changes to **PULP** (Precompressed Upstream Layer Pipeline) will be 
 
 
 
-## [1.0.0] - 2026-08-03
+## v1.0.0 - 2026-08-03  
 
 
 
@@ -28,7 +28,7 @@ All notable changes to **PULP** (Precompressed Upstream Layer Pipeline) will be 
 
 - **Dual Licensing:** AGPLv3 Open Source license and Commercial License support.
 
-2026-08-24
+## 2026-08-24  
 ### Fixed
 - IPv6 bracketed addresses with ports now correctly anonymized via memchr() in StripBrackets()
 - FastSeed() sign extension on non-ASCII characters (cast unsigned char)
