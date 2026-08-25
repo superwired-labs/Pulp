@@ -183,7 +183,7 @@ hardware in minutes.
 
 1. Clone the repository and open `PULP.sln` in Visual Studio 2022.
 2. Build the solution in **Release | x64** configuration.
-3. Open `LogProducer.vcxproj` in a new Visual Studio instance and build it.
+3. Open `LogProducer.vcxproj` in a new Visual Studio instance and build it in **Release | x64**
 4. Copy `Pulp.dll` and `Pulp.lib` from `PULP/x64/Release/` into `LogProducer/x64/Release/`.
 5. Customize the test (paths, number of threads, PULP options) in `LogProducer.cpp` – it's straightforward.
 6. Click Run.
