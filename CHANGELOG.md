@@ -60,3 +60,5 @@ All notable changes to **PULP** (Precompressed Upstream Layer Pipeline) will be 
 - IPv6 bracketed addresses (RFC 3986) now properly anonymized (RGPD compliance fix)
 - Sign extension in FastSeed() eliminated for correct hash distribution
 
+## v1.0.1 - 2026-08-26  
+Cumulative version for package release update
