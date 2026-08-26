@@ -28,7 +28,7 @@ Priorities may adjust based on community feedback, sponsor requests, and contrib
 
 ### Medium Priority
 
-- [ ] **Scalar / Non-AVX2 Fallback:** Graceful fallback path for older CPU architectures.
+- [x] **Scalar / Non-AVX2 Fallback:** Graceful fallback path for older CPU architectures. -> PULP is now purely scalar.
 
 - [ ] **OTLP / FluentBit Exporter:** Standalone bridge tool converting PULP binary archives directly to OpenTelemetry streams.
 
