@@ -3,8 +3,9 @@
 Copyright François Gauthier - Superwired-Labs
 
 [![License](https://img.shields.io/badge/License-AGPL%20v3%20%2F%20Commercial-blue.svg)](LICENSES/AGPL-3.0.txt)
-[![Platform](https://img.shields.io/badge/platform-Windows%20x64-lightgrey)]()
+![Platform](https://img.shields.io/badge/platform-Windows%20x64-lightgrey)
 [![MSVC C11 Build Check](https://github.com/superwired-labs/Pulp/actions/workflows/build.yml/badge.svg)](https://github.com/superwired-labs/Pulp/actions/workflows/build.yml)
+![Version](https://img.shields.io/badge/version-1.0.1-green.svg)
 
 **Stop feeding raw logs to expensive storage/network.**
 
