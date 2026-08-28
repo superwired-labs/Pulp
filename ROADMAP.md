@@ -14,7 +14,7 @@ Priorities may adjust based on community feedback, sponsor requests, and contrib
 
 ### High Priority / Short-Term
 
-- [ ] ~~**Background Flush Timer:** Optional automatic buffer flush on low-traffic applications after N milliseconds.~~ -> Replaced by exposing a force flush function to be called on custom events/timers
+- [ ] **Forced flush:** Buffer flush on low-traffic applications or custom events/timers
 
 - [ ] **Official Rust Binding:** Safe Rust wrapper around `pulp.dll` (published on crates.io).
       
