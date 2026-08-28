@@ -11,41 +11,32 @@ Priorities may adjust based on community feedback, sponsor requests, and contrib
 ---
 
 
-
 ### High Priority / Short-Term
 
-- [ ] **Forced flush:** Buffer flush on low-traffic applications or custom events/timers
-
-- [ ] **Official Rust Binding:** Safe Rust wrapper around `pulp.dll` (published on crates.io).
-      
-- [ ] **NDR/IPFIX** version for network monitoring
-
-- [ ] **Enhanced Integration Examples:** Complete sample projects for IIS native C++ modules and C# / .NET P/Invoke integrations.
-
+- [ ] **Explicit Force Flush API:** Expose `PulpForceFlush()` to enable application-driven or timer-driven buffer flushes on low-traffic streams or custom events without stopping the logger.
+- [ ] **Rust Binding:** Safe Rust wrapper crate around `pulp.dll` published on crates.io.
+- [ ] **C# / .NET Integration (`Pulp.Net`):** Native P/Invoke wrapper and NuGet package for seamless integration into ASP.NET Core and IIS workloads.
+- [ ] **NDR / IPFIX Variant:** Dedicated 64-byte payload format (dual IPv4/v6, free-form 64-bit metrics) for high-throughput network monitoring and traffic analysis.
+- [ ] **Enhanced Integration Examples:** Complete sample projects for IIS native C++ modules and C# / .NET integrations.
 
 
 ---
-
 
 
 ### Medium Priority
 
-- [x] **Scalar / Non-AVX2 Fallback:** Graceful fallback path for older CPU architectures. -> PULP is now purely scalar.
 
-- [ ] **OTLP / FluentBit Exporter:** Standalone bridge tool converting PULP binary archives directly to OpenTelemetry streams.
-
+- [ ] **OTLP / FluentBit Exporter:** Converting PULP binary archives directly to OpenTelemetry streams.
+- [ ] **C++ Header-Only Wrapper (`pulp.hpp`):** Modern RAII wrapper for high-frequency trading and C++ game server architectures.
 
 
 ---
-
 
 
 ### Long-Term / Enterprise Features
 
 - [ ] **Linux Kernel/POSIX Port:** POSIX reimplementation for Linux server environments leveraging the kernel's unique features.
-
 - [ ] **Multi-Socket NUMA Optimizations:** Lock-free inter-process allocations for hyper-scale (>64 core) architectures.
-
 - [ ] **Queryable archives** Selective indexing layer for forensic analysis.
   - Lightweight inline filter extracts flagged events (errors, 5xx, security alerts) during `PulpWrite()` into a sidecar index (SQLite/structured store).
   - Query the index by time range, status code, or endpoint to identify relevant `.bin` shards.
@@ -53,7 +44,6 @@ Priorities may adjust based on community feedback, sponsor requests, and contrib
   - Architecture: hot index (small, queryable) + cold storage (compressed `.bin` archives), avoiding the throughput penalty of full-stream database insertion.
 
 ---
-
 
 
 ### Ideas & Community Proposals
