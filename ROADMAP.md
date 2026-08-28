@@ -14,9 +14,11 @@ Priorities may adjust based on community feedback, sponsor requests, and contrib
 
 ### High Priority / Short-Term
 
-- [ ] **Background Flush Timer:** Optional automatic buffer flush on low-traffic applications after N milliseconds.
+- [ ] ~~**Background Flush Timer:** Optional automatic buffer flush on low-traffic applications after N milliseconds.~~ -> Replaced by exposing a force flush function to be called on custom events/timers
 
 - [ ] **Official Rust Binding:** Safe Rust wrapper around `pulp.dll` (published on crates.io).
+      
+- [ ] **NDR/IPFIX** version for network monitoring
 
 - [ ] **Enhanced Integration Examples:** Complete sample projects for IIS native C++ modules and C# / .NET P/Invoke integrations.
 
