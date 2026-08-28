@@ -38,10 +38,6 @@ Priorities may adjust based on community feedback, sponsor requests, and contrib
 - [ ] **Linux Kernel/POSIX Port:** POSIX reimplementation for Linux server environments leveraging the kernel's unique features.
 - [ ] **Multi-Socket NUMA Optimizations:** Lock-free inter-process allocations for hyper-scale (>64 core) architectures.
 - [ ] **Queryable archives** Selective indexing layer for forensic analysis.
-  - Lightweight inline filter extracts flagged events (errors, 5xx, security alerts) during `PulpWrite()` into a sidecar index (SQLite/structured store).
-  - Query the index by time range, status code, or endpoint to identify relevant `.bin` shards.
-  - Decode only matching shards to full text via `PulpReader` for complete context retrieval.
-  - Architecture: hot index (small, queryable) + cold storage (compressed `.bin` archives), avoiding the throughput penalty of full-stream database insertion.
 
 ---
 
