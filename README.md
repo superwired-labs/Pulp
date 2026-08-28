@@ -42,6 +42,9 @@ PULP's benchmark throughput measures the complete end-to-end pipeline operating 
 
 **Verify the numbers yourself**: `LogProducer` ships with embedded test datasets. Drop the DLL into the folder, run it on your hardware, results in under 5 minutes.
 
+Live benhmark on Youtube:  
+[![PULP Live Benchmark Demo](https://img.youtube.com/vi/xrGmmru5UUQ/hqdefault.jpg)](https://www.youtube.com/watch?v=xrGmmru5UUQ)
+
 ---
 
 ## When to use PULP
