@@ -55,7 +55,7 @@ Pre-process millions of HTTP access logs per second. Anonymize IP addresses inli
 ## Architectural Highlights
 
 * **Zero-Contention Hot Path:** Mechanical sympathy during production. Telemetry passes through Thread-Local Storage (TLS) buffers to eliminate lock contention.
-* **Deterministic RAM occupation:** The hot path speed allow for spikes to be seamlessly integrated in preallocated resources without ever allocating more resource.
+* **Deterministic RAM occupation:** The hot path speed allows for spikes to be seamlessly integrated in preallocated resources without ever allocating more resources.
 * **Crash-Resistant Format:** Binary block structure designed for autonomous extraction—logs remain 100% readable even after a hard system shutdown.
 * **Absolute Event Sequencing:** Inter-thread atomic numbering guarantees exact chronological event reconstruction across multi-core systems.
 
