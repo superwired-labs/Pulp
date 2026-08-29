@@ -4,9 +4,6 @@ title: PULP - Precompressed Upstream Layer Pipeline
 ---
 
 # PULP: Precompressed Upstream Layer Pipeline
-...
-
-# PULP: Precompressed Upstream Layer Pipeline
 
 > **Stop burning your cloud budget on raw log ingestion.**  
 > A bare-metal C11 engine designed to sit upstream on Windows infrastructure - compressing, anonymizing, and throttling telemetry at line-rate before it hits Splunk, Datadog, or your Elastic SIEM.
