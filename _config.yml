@@ -1,1 +1,5 @@
-theme: jekyll-theme-primer
+title: PULP - Precompressed Upstream Layer Pipeline
+description: High-throughput bare-metal C11 telemetry engine
+
+remote_theme: pages-themes/primer
+plugins: jekyll-remote-theme
