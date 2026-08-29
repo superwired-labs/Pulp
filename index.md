@@ -3,10 +3,45 @@ layout: default
 title: PULP - Precompressed Upstream Layer Pipeline
 ---
 
-# PULP: Precompressed Upstream Layer Pipeline
+# PULP: Precompressed Upstream Layer Pipeline  
+
+[![C11 Bare-Metal](https://img.shields.io/badge/Language-C11_Bare--Metal-00599C?style=for-the-badge&logo=c)](https://github.com/superwired-labs/Pulp)
+[![Windows x64](https://img.shields.io/badge/Platform-Windows_x64-0078D6?style=for-the-badge&logo=windows)](https://github.com/superwired-labs/Pulp)
+[![Throughput](https://img.shields.io/badge/Throughput-20M%2B_logs%2Fsec-brightgreen?style=for-the-badge)](#key-performance-indicators)
+[![RAM Footprint](https://img.shields.io/badge/RAM-from_~20_MB_Bounded-blueviolet?style=for-the-badge)](#key-performance-indicators)
+[![License](https://img.shields.io/badge/License-AGPLv3_%2F_Commercial-orange?style=for-the-badge)](https://github.com/superwired-labs/Pulp/blob/main/COMMERCIAL.md)
+
 
 > **Stop burning your cloud budget on raw log ingestion.**  
 > A bare-metal C11 engine designed to sit upstream on Windows infrastructure - compressing, anonymizing, and throttling telemetry at line-rate before it hits Splunk, Datadog, or your Elastic SIEM.
+<p align="center" style="margin: 35px 0;">
+  <a href="mailto:fgauthier@superwired-labs.com?subject=PULP%20PoC%20%2F%20Commercial%20Enquiry" style="background-color: #2da44e; color: white; padding: 14px 28px; font-weight: bold; text-decoration: none; border-radius: 6px; font-size: 1.1em; display: inline-block;">🚀 Request an Enterprise PoC</a>
+  &nbsp;&nbsp;&nbsp;
+  <a href="https://github.com/superwired-labs/Pulp" style="background-color: #24292f; color: white; padding: 14px 28px; font-weight: bold; text-decoration: none; border-radius: 6px; font-size: 1.1em; display: inline-block;">⭐ View GitHub Repository</a>
+</p>
+---
+
+## The FinOps & Economic Impact
+
+Traditional logging agents format redundant JSON/Syslog strings on the hot path, triggering massive SIEM ingestion rates and network egress charges. 
+
+PULP acts as a **Smart Upstream Gateway**, deduplicating and compressing structured fields (URLs, IPs, endpoints, status codes, latencies) right inside the application process memory.
+<br/>
+### ROI Scenario: 30 TB / Day Ingestion Stream
+
+* **Uncompressed Raw Stream (Traditional Agent):**
+  * AWS Network Egress: 30 TB × $85 = **$2,550 / day**
+  * Datadog / SIEM Ingestion: 30 TB × $160 = **$4,800 / day**
+  * **Total Egress & Ingestion Cost:** **$7,350 / day** (~$220,000 / month)
+
+<br/>
+
+* **With PULP (5× Upstream Compression → 6 TB Shipped):**
+  * AWS Network Egress: 6 TB × $85 = **$510 / day**
+  * Datadog / SIEM Ingestion: 6 TB × $160 = **$960 / day**
+  * **Total Egress & Ingestion Cost:** **$1,470 / day** (~$44,000 / month)
+<br/>
+=> **Net Monthly Savings: ~$176,000 / month** saved at the source without losing a single telemetry event.
 
 ---
 
@@ -19,28 +54,6 @@ title: PULP - Precompressed Upstream Layer Pipeline
 | **Memory Footprint** | **Bounded (from <20 MB)** | Zero-OOM during DDoS or log storms |
 | **Engine Footprint** | **~50 KB standalone DLL** | Pure C11 bare-metal, zero runtime dependencies |
 | **Privacy / GDPR** | **Inline IPv4/v6 Anonymization** | Anonymized at the source before hitting disk or network |
-
----
-
-## The FinOps & Economic Impact
-
-Traditional logging agents format redundant JSON/Syslog strings on the hot path, triggering massive SIEM ingestion rates and network egress charges. 
-
-PULP acts as a **Smart Upstream Gateway**, deduplicating and compressing structured fields (URLs, IPs, endpoints, status codes, latencies) right inside the application process memory.
-
-### ROI Scenario: 30 TB / Day Ingestion Stream
-
-* **Uncompressed Raw Stream (Traditional Agent):**
-  * AWS Network Egress: 30 TB × $85 = **$2,550 / day**
-  * Datadog / SIEM Ingestion: 30 TB × $160 = **$4,800 / day**
-  * **Total Egress & Ingestion Cost:** **$7,350 / day** (~$220,000 / month)
-
-* **With PULP (5× Upstream Compression → 6 TB Shipped):**
-  * AWS Network Egress: 6 TB × $85 = **$510 / day**
-  * Datadog / SIEM Ingestion: 6 TB × $160 = **$960 / day**
-  * **Total Egress & Ingestion Cost:** **$1,470 / day** (~$44,000 / month)
-
-=> **Net Monthly Savings: ~$176,000 / month** saved at the source without losing a single telemetry event.
 
 ---
 
@@ -82,3 +95,9 @@ Ready to evaluate PULP on your real-world telemetry streams?
 * 💻 **GitHub Repository:** [github.com/superwired-labs/Pulp](https://github.com/superwired-labs/Pulp)
 * 📧 **Commercial Enquiries & PoC Requests:** Contact François Gauthier at `fgauthier@superwired-labs.com`
 * 💬 **LinkedIn:** [François Gauthier on LinkedIn](https://www.linkedin.com/in/superwired-labs/)
+
+<p align="center" style="margin: 35px 0;">
+  <a href="mailto:fgauthier@superwired-labs.com?subject=PULP%20PoC%20%2F%20Commercial%20Enquiry" style="background-color: #2da44e; color: white; padding: 14px 28px; font-weight: bold; text-decoration: none; border-radius: 6px; font-size: 1.1em; display: inline-block;">🚀 Request an Enterprise PoC</a>
+  &nbsp;&nbsp;&nbsp;
+  <a href="https://github.com/superwired-labs/Pulp" style="background-color: #24292f; color: white; padding: 14px 28px; font-weight: bold; text-decoration: none; border-radius: 6px; font-size: 1.1em; display: inline-block;">⭐ View GitHub Repository</a>
+</p>
