@@ -7,18 +7,14 @@ title: PULP - Precompressed Upstream Layer Pipeline
 
 [![C11 Bare-Metal](https://img.shields.io/badge/Language-C11_Bare--Metal-00599C?style=for-the-badge&logo=c)](https://github.com/superwired-labs/Pulp)
 [![Windows x64](https://img.shields.io/badge/Platform-Windows_x64-0078D6?style=for-the-badge&logo=windows)](https://github.com/superwired-labs/Pulp)
-[![Throughput](https://img.shields.io/badge/Throughput-20M%2B_logs%2Fsec-brightgreen?style=for-the-badge)](#key-performance-indicators)
+[![Throughput](https://img.shields.io/badge/Throughput-20M%2B_logs%2Fsec-brightgreen?style=for-the-badge)](#key-performance-indicators)  
 [![RAM Footprint](https://img.shields.io/badge/RAM-from_~20_MB_Bounded-blueviolet?style=for-the-badge)](#key-performance-indicators)
 [![License](https://img.shields.io/badge/License-AGPLv3_%2F_Commercial-orange?style=for-the-badge)](https://github.com/superwired-labs/Pulp/blob/main/COMMERCIAL.md)
 
 
 > **Stop burning your cloud budget on raw log ingestion.**  
 > A bare-metal C11 engine designed to sit upstream on Windows infrastructure - compressing, anonymizing, and throttling telemetry at line-rate before it hits Splunk, Datadog, or your Elastic SIEM.
-<p align="center" style="margin: 35px 0;">
-  <a href="mailto:fgauthier@superwired-labs.com?subject=PULP%20PoC%20%2F%20Commercial%20Enquiry" style="background-color: #2da44e; color: white; padding: 14px 28px; font-weight: bold; text-decoration: none; border-radius: 6px; font-size: 1.1em; display: inline-block;">🚀 Request an Enterprise PoC</a>
-  &nbsp;&nbsp;&nbsp;
-  <a href="https://github.com/superwired-labs/Pulp" style="background-color: #24292f; color: white; padding: 14px 28px; font-weight: bold; text-decoration: none; border-radius: 6px; font-size: 1.1em; display: inline-block;">⭐ View GitHub Repository</a>
-</p>
+
 ---
 
 ## The FinOps & Economic Impact
