@@ -1,3 +1,11 @@
+---
+layout: default
+title: PULP - Precompressed Upstream Layer Pipeline
+---
+
+# PULP: Precompressed Upstream Layer Pipeline
+...
+
 # PULP: Precompressed Upstream Layer Pipeline
 
 > **Stop burning your cloud budget on raw log ingestion.**  
