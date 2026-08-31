@@ -115,7 +115,8 @@ Workload: 1 000 unique URLs × 5 000 unique IPs, random distribution.
 - End-to-end ratio: ~4.66× (preprocessing + LZ4: 21.5% of the original)
 - 0 logs lost, 0 backpressure events
 
-Performance depends on the hardware, the number of threads, the data entropy, cardinality, and the parameters passed to the initialisation function.
+Performance depends on the hardware, the number of threads, the data entropy, cardinality, and the parameters passed to the initialisation function.  
+> Ran the benchmark? Open an issue with your configuration (CPU, dataset used, PulpInit parameters,...) +  throughput !
 
 ---
 
