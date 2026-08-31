@@ -20,8 +20,7 @@ title: PULP - Precompressed Upstream Layer Pipeline
 ## The FinOps & Economic Impact
 
 Traditional logging agents format redundant JSON/Syslog strings on the hot path, triggering massive SIEM ingestion rates and network egress charges. 
-
-PULP acts as a **Smart Upstream Gateway**, deduplicating and compressing structured fields (URLs, IPs, endpoints, status codes, latencies) right inside the application process memory.
+PULP acts as a **Smart Upstream Gateway**, tokenizing redundant fields into lightweight batch dictionaries right inside process memory. This index-based structure collapses data entropy, maximizing LZ4 compression efficiency before network egress or disk write.
 <br/>
 ### ROI Scenario: 30 TB / Day Ingestion Stream
 
