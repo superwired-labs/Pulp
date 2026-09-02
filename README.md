@@ -21,8 +21,6 @@ Link the DLL, call one function per log, and let compressed binary shards accumu
 * **3–6× lossless end-to-end compression** on realistic structured logs (preprocessing + LZ4)
 * 0 logs lost, 0 backpressure under heavy adversarial stress
 
-> ⭐ **Star this repo if you find it useful**; it helps others discover PULP.
-
 ### What is Included in PULP's Measured Throughput (20M+ logs/sec)?
 
 PULP's benchmark throughput measures the complete end-to-end pipeline operating on realistic workloads:
