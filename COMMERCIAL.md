@@ -1,26 +1,41 @@
 # PULP Commercial Licensing
 
-PULP is available under a commercial license from Superwired-Labs for organizations that wish to integrate the library into closed-source products, proprietary services, or internal enterprise tools without complying with the AGPLv3 copyleft terms.
+PULP is available under a dual-license model: the GNU Affero General
+Public License v3.0 or any later version (AGPLv3+) for full open-source
+use and redistribution, or a commercial license from Superwired-Labs
+for closed-source projects.
 
-## Licensing Model
+- **SPDX identifier:** `AGPL-3.0-or-later OR LicenseRef-Superwired-Commercial-v1.0`
+- **Copyright:** (C) 2026 François Gauthier — Superwired-Labs
 
-- **Per-Node Lifetime License:** Simple perpetual license per server, virtual machine (VM), or appliance node. Includes full C source code access.
-  
-- **Volume Discounts:** Tiered pricing available for deployments exceeding 50 nodes.
+## Commercial License
 
-- **OEM \& Redistribution:** Custom royalty models for embedding PULP inside commercial software packages or SIEM appliances.
+If you intend to use this software in a closed-source product or
+service without complying with the AGPLv3 copyleft terms, a commercial
+license is required.
 
+PULP is licensed on a per-instance basis via an annual subscription.
+A minimum annual volume of licenses is required. An instance is any
+running process, physical or virtual, embedding PULP.
 
-No mandatory support contracts or recurring subscription fees.
+There is no license server, no dongle, and no online activation:
+volume declarations are self-reported annually. An annual compliance
+certificate is issued after reception of your declaration, to support
+internal and external audits.
 
+Please contact us to get a quote based on your deployment volume.
 
-## Requesting a Quote
+## Professional Services
 
-To obtain a commercial quote or discuss OEM integration terms, please contact:
+**Fund a Feature.** You can fund the development of new features for
+PULP. Contact us to discuss your requirements and find out how it works.
 
-**François Gauthier**
+**Consulting & Custom Development.** If you need a custom build of PULP,
+integration assistance, or general software engineering services, we
+offer dedicated consulting services. Contact us with your project
+details.
 
-Founder & Software Architect, Superwired-Labs
+## Contact
 
-Email: `fgauthier \\\[at] superwired-labs \\\[dot] com`
-
+  François Gauthier — Superwired-Labs
+  fgauthier [at] superwired-labs [dot] com
