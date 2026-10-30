@@ -9,6 +9,9 @@ Copyright François Gauthier - Superwired-Labs
 
 **Stop feeding raw logs to expensive storage/network.**
 
+
+Note: This is the Windows demonstrator build. For production-grade binaries, native Linux support, or commercial OEM licensing, please contact the author.
+
 ## Purpose & Scope
 
 PULP is a native C library for Windows x64 that compresses structured data **at the source**, inside your own process, before it ever hits disk or network. Lossless semantic deduplication paired with LZ4 shrinks data 3–6×; IP anonymisation is applied inline; and a zero-allocation on the producer hot path sustains 20M+ logs/sec with fully deterministic memory.
